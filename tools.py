@@ -123,7 +123,7 @@ class CWLFile(os.PathLike):
     def __fspath__(self):
         return(self.path)
 
-def run_command(args):
+def run_command(args, testcase = None, validate = False, print_stdout = False):
     """
     Helper function to run a shell command easier
 
@@ -131,12 +131,30 @@ def run_command(args):
     ----------
     args: list
         a list of shell args to execute
+    validate: bool
+        whether to check that the exit code was 0; requires `testcase`
+    testcase: unittest.TestCase
+        a test case instance for making assertions
+
+    Usage
+    ------
+        command = [ "foo.py", "arg1", "arg2" ]
+        returncode, proc_stdout, proc_stderr = run_command(command, testcase = self, validate = True)
     """
     process = sp.Popen(args, stdout = sp.PIPE, stderr = sp.PIPE, universal_newlines = True)
     proc_stdout, proc_stderr = process.communicate()
     returncode = process.returncode
     proc_stdout = proc_stdout.strip()
     proc_stderr = proc_stderr.strip()
+
+    if print_stdout:
+        print(proc_stdout)
+
+    # check that it ran successfully; requires testcase to be passed !
+    if validate:
+        if returncode != 0:
+            print(proc_stderr)
+        testcase.assertEqual(returncode, 0)
     return(returncode, proc_stdout, proc_stderr)
 
 def run_cwl(
