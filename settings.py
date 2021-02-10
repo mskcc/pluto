@@ -37,6 +37,7 @@ IS_IMPACT = os.environ.get('IS_IMPACT', "True") # TODO: deprecate this
 PORTAL_FILE = os.environ.get('PORTAL_FILE', 'data_mutations_extended.txt') # TODO: deprecate this
 PORTAL_CNA_FILE = os.environ.get('PORTAL_CNA_FILE', 'data_CNA.txt') # TODO: deprecate this
 
+REF_FASTA = os.environ.get('REF_FASTA', '/juno/work/ci/resources/genomes/GRCh37/fasta/b37.fasta')
 
 DATA_SETS = {
     "Proj_08390_G": {
@@ -52,6 +53,7 @@ DATA_SETS = {
         "analyst_file": "Proj_08390_G.muts.maf", # TODO: deprecate this
         "analysis_gene_cna_file": "Proj_08390_G.gene.cna.txt", # TODO: deprecate this
         "MAF_FILTER_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "maf_filter"),
-        "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "snp-pileup")
+        "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "snp-pileup"),
+        'REF_FASTA': REF_FASTA
     }
 }
