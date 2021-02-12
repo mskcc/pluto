@@ -42,7 +42,9 @@ class CWLRunner(object):
         print_command = False,
         restart = False,
         jobStore = None,
-        debug = False
+        debug = False,
+        leave_tmpdir = False,
+        leave_outputs = False
         ):
         self.cwl_file = cwl_file
         self.input = input
@@ -56,6 +58,8 @@ class CWLRunner(object):
         self.restart = restart
         self.jobStore = jobStore
         self.debug = debug
+        self.leave_tmpdir = leave_tmpdir
+        self.leave_outputs = leave_outputs
 
         if dir is None:
             if engine == 'cwltool':
@@ -84,7 +88,9 @@ class CWLRunner(object):
                 print_command = self.print_command,
                 check_returncode = False,
                 input_json_file = self.input_json_file,
-                debug = self.debug
+                debug = self.debug,
+                leave_tmpdir = self.leave_tmpdir,
+                leave_outputs = self.leave_outputs
                 )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
@@ -167,9 +173,11 @@ def run_cwl(
     print_command = False,
     check_returncode = True,
     input_json_file = None,
-    debug = False
+    debug = False,
+    leave_tmpdir = False,
+    leave_outputs = False
     ):
-    """Run the CWL"""
+    """Run the CWL with cwltool / cwl-runner"""
     if not input_json_file:
         input_json_file = os.path.join(tmpdir, "input.json")
     with open(input_json_file, "w") as json_out:
@@ -179,6 +187,10 @@ def run_cwl(
     cache_dir = os.path.join(tmpdir, 'tmp', "cache")
     tmp_dir = os.path.join(tmpdir, 'tmp', "tmp")
 
+    if leave_outputs:
+        CWL_ARGS = [ *CWL_ARGS, '--leave-outputs' ]
+    if leave_tmpdir:
+        CWL_ARGS = [ *CWL_ARGS, '--leave-tmpdir' ]
     if debug:
         CWL_ARGS = [ *CWL_ARGS, '--debug' ]
 
@@ -438,6 +450,11 @@ class PlutoTestCase(unittest.TestCase):
     DATA_SETS = DATA_SETS
     KNOWN_FUSIONS_FILE = KNOWN_FUSIONS_FILE
     IMPACT_FILE = IMPACT_FILE
+    runner_args = dict(
+        leave_outputs = False,
+        leave_tmpdir = False,
+        debug = False 
+        )
 
     def setUp(self):
         """this gets run for each test case"""
@@ -462,7 +479,11 @@ class PlutoTestCase(unittest.TestCase):
             input = input,
             verbose = False,
             dir = self.tmpdir,
-            testcase = self)
+            testcase = self,
+            **self.runner_args)
+            # debug = self.debug,
+            # leave_tmpdir = self.leave_tmpdir,
+            # leave_outputs = self.leave_outputs
         output_json, output_dir, output_json_file = runner.run()
         return(output_json, output_dir)
 
