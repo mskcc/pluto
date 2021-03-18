@@ -38,7 +38,7 @@ PORTAL_FILE = os.environ.get('PORTAL_FILE', 'data_mutations_extended.txt') # TOD
 PORTAL_CNA_FILE = os.environ.get('PORTAL_CNA_FILE', 'data_CNA.txt') # TODO: deprecate this
 
 REF_FASTA = os.environ.get('REF_FASTA', '/juno/work/ci/resources/genomes/GRCh37/fasta/b37.fasta')
-MICROSATELLITES_LIST = os.environ.get("MICROSATELLITES_LIST", "/work/ci/resources/request_files/msisensor/b37_known_somatic_microsatellites.list")
+MICROSATELLITES_LIST = os.environ.get("MICROSATELLITES_LIST", "/work/ci/resources/request_files/msisensor/microsatellites.list")
 
 DATA_SETS = {
     "Proj_08390_G": {
