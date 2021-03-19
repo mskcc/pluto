@@ -198,6 +198,8 @@ def run_cwl(
     if debug:
         CWL_ARGS = [ *CWL_ARGS, '--debug' ]
     if parallel:
+        print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached!")
+        # if the containers are not already all pre-pulled then it can cause issues with parallel jobs all trying to pull the same container to the same filepath
         CWL_ARGS = [ *CWL_ARGS, '--parallel' ]
 
     command = [

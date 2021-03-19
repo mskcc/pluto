@@ -39,6 +39,10 @@ PORTAL_CNA_FILE = os.environ.get('PORTAL_CNA_FILE', 'data_CNA.txt') # TODO: depr
 
 REF_FASTA = os.environ.get('REF_FASTA', '/juno/work/ci/resources/genomes/GRCh37/fasta/b37.fasta')
 MICROSATELLITES_LIST = os.environ.get("MICROSATELLITES_LIST", "/work/ci/resources/request_files/msisensor/microsatellites.list")
+# $ md5sum /work/ci/resources/request_files/msisensor/microsatellites.list
+# dc982a3bfe1e33b201b99a8ebf3acd61  /work/ci/resources/request_files/msisensor/microsatellites.list
+# $ wc -l /work/ci/resources/request_files/msisensor/microsatellites.list
+# 33422661 /work/ci/resources/request_files/msisensor/microsatellites.list
 
 DATA_SETS = {
     "Proj_08390_G": {
