@@ -38,13 +38,14 @@ class CWLRunner(object):
         input_json_file = None, # path to write input JSON to if you already have one chosen
         verbose = True,
         testcase = None,
-        engine = "cwltool",
+        engine = "cwltool", # default engine is cwl-runner cwltool
         print_command = False,
         restart = False,
         jobStore = None,
         debug = False,
         leave_tmpdir = False,
-        leave_outputs = False
+        leave_outputs = False,
+        parallel = False
         ):
         self.cwl_file = cwl_file
         self.input = input
@@ -60,6 +61,7 @@ class CWLRunner(object):
         self.debug = debug
         self.leave_tmpdir = leave_tmpdir
         self.leave_outputs = leave_outputs
+        self.parallel = parallel
 
         if dir is None:
             if engine == 'cwltool':
@@ -90,7 +92,8 @@ class CWLRunner(object):
                 input_json_file = self.input_json_file,
                 debug = self.debug,
                 leave_tmpdir = self.leave_tmpdir,
-                leave_outputs = self.leave_outputs
+                leave_outputs = self.leave_outputs,
+                parallel = self.parallel
                 )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
@@ -175,7 +178,8 @@ def run_cwl(
     input_json_file = None,
     debug = False,
     leave_tmpdir = False,
-    leave_outputs = False
+    leave_outputs = False,
+    parallel = False
     ):
     """Run the CWL with cwltool / cwl-runner"""
     if not input_json_file:
@@ -193,6 +197,8 @@ def run_cwl(
         CWL_ARGS = [ *CWL_ARGS, '--leave-tmpdir' ]
     if debug:
         CWL_ARGS = [ *CWL_ARGS, '--debug' ]
+    if parallel:
+        CWL_ARGS = [ *CWL_ARGS, '--parallel' ]
 
     command = [
         "cwl-runner",
@@ -453,7 +459,8 @@ class PlutoTestCase(unittest.TestCase):
     runner_args = dict(
         leave_outputs = False,
         leave_tmpdir = False,
-        debug = False 
+        debug = False,
+        parallel = False
         )
 
     def setUp(self):
