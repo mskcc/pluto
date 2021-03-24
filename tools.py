@@ -35,6 +35,7 @@ class CWLRunner(object):
         CWL_ARGS = CWL_ARGS,
         print_stdout = False,
         dir = None, # directory to run the CWL in and write output to
+        output_dir = None, # directory to save output files to
         input_json_file = None, # path to write input JSON to if you already have one chosen
         verbose = True,
         testcase = None,
@@ -62,6 +63,7 @@ class CWLRunner(object):
         self.leave_tmpdir = leave_tmpdir
         self.leave_outputs = leave_outputs
         self.parallel = parallel
+        self.output_dir = output_dir
 
         if dir is None:
             if engine == 'cwltool':
@@ -93,7 +95,8 @@ class CWLRunner(object):
                 debug = self.debug,
                 leave_tmpdir = self.leave_tmpdir,
                 leave_outputs = self.leave_outputs,
-                parallel = self.parallel
+                parallel = self.parallel,
+                output_dir = self.output_dir
                 )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
@@ -179,7 +182,8 @@ def run_cwl(
     debug = False,
     leave_tmpdir = False,
     leave_outputs = False,
-    parallel = False
+    parallel = False,
+    output_dir = None
     ):
     """Run the CWL with cwltool / cwl-runner"""
     if not input_json_file:
@@ -187,7 +191,8 @@ def run_cwl(
     with open(input_json_file, "w") as json_out:
         json.dump(input_json, json_out)
 
-    output_dir = os.path.join(tmpdir, "output")
+    if output_dir is None:
+        output_dir = os.path.join(tmpdir, "output")
     cache_dir = os.path.join(tmpdir, 'tmp', "cache")
     tmp_dir = os.path.join(tmpdir, 'tmp', "tmp")
 
