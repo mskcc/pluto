@@ -3,6 +3,14 @@ Put settings to use for the tests in here for easier access
 """
 import os
 
+# disable execution of very large tests;
+ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
+# $ LARGE_TESTS=True python3 tests
+# tag large test cases with:
+# @unittest.skipIf(ENABLE_LARGE_TESTS != True, "is a large test")
+if ENABLE_LARGE_TESTS:
+    print(">>> Enabling execution of large test cases...")
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 CWL_DIR = os.path.join(os.path.dirname(THIS_DIR), "cwl") # ../cwl
 REF_DIR = os.path.join(os.path.dirname(THIS_DIR), "ref") # ../ref
@@ -68,6 +76,6 @@ DATA_SETS = {
         "QC_DIR": os.path.join(FIXTURES_DIR, "demo", "qc"),
         "INPUTS_DIR": os.path.join(FIXTURES_DIR, "demo", "inputs"),
         "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "demo", "snp-pileup"),
-        "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist",
+        "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist"
     }
 }

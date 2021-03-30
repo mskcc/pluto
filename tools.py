@@ -453,6 +453,13 @@ class TableReader(object):
             num_records += 1
         return(num_records)
 
+
+
+
+
+
+
+
 class PlutoTestCase(unittest.TestCase):
     """
     unittest.TestCase wrapper that includes a tmpdir
