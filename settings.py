@@ -76,6 +76,7 @@ DATA_SETS = {
         "QC_DIR": os.path.join(FIXTURES_DIR, "demo", "qc"),
         "INPUTS_DIR": os.path.join(FIXTURES_DIR, "demo", "inputs"),
         "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "demo", "snp-pileup"),
+        "FACETS_DIR": os.path.join(FIXTURES_DIR, "demo", "facets"),
         "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist"
     }
 }
