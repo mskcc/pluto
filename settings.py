@@ -67,7 +67,8 @@ DATA_SETS = {
         "analysis_gene_cna_file": "Proj_08390_G.gene.cna.txt", # TODO: deprecate this
         "MAF_FILTER_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "maf_filter"),
         "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "snp-pileup"),
-        'REF_FASTA': REF_FASTA
+        'REF_FASTA': REF_FASTA,
+        'microsatellites_file': MICROSATELLITES_LIST
     },
     "demo":{
         "DIR": os.path.join(FIXTURES_DIR, "demo"),
@@ -77,6 +78,9 @@ DATA_SETS = {
         "INPUTS_DIR": os.path.join(FIXTURES_DIR, "demo", "inputs"),
         "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "demo", "snp-pileup"),
         "FACETS_DIR": os.path.join(FIXTURES_DIR, "demo", "facets"),
-        "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist"
+        "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist",
+        'microsatellites_file': os.path.join(FIXTURES_DIR, "demo", "microsatellites", 'microsatellites.head500000.list'),
+        # $ md5sum microsatellites.head500000.list
+        # aa0126e6a916ec82a2837989458918b3  microsatellites.head500000.list
     }
 }
