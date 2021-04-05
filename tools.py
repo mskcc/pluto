@@ -37,6 +37,7 @@ class CWLRunner(object):
         dir = None, # directory to run the CWL in and write output to
         output_dir = None, # directory to save output files to
         input_json_file = None, # path to write input JSON to if you already have one chosen
+        input_is_file = False, # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
         verbose = True,
         testcase = None,
         engine = "cwltool", # default engine is cwl-runner cwltool
@@ -64,6 +65,7 @@ class CWLRunner(object):
         self.leave_outputs = leave_outputs
         self.parallel = parallel
         self.output_dir = output_dir
+        self.input_is_file = input_is_file
 
         if dir is None:
             if engine == 'cwltool':
@@ -96,7 +98,8 @@ class CWLRunner(object):
                 leave_tmpdir = self.leave_tmpdir,
                 leave_outputs = self.leave_outputs,
                 parallel = self.parallel,
-                output_dir = self.output_dir
+                output_dir = self.output_dir,
+                input_is_file = self.input_is_file
                 )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
@@ -183,13 +186,19 @@ def run_cwl(
     leave_tmpdir = False,
     leave_outputs = False,
     parallel = False,
-    output_dir = None
+    output_dir = None,
+    input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
     ):
     """Run the CWL with cwltool / cwl-runner"""
-    if not input_json_file:
-        input_json_file = os.path.join(tmpdir, "input.json")
-    with open(input_json_file, "w") as json_out:
-        json.dump(input_json, json_out)
+    if not input_is_file:
+        # the input_json is a Python dict that needs to be dumped to file
+        if not input_json_file:
+            input_json_file = os.path.join(tmpdir, "input.json")
+        with open(input_json_file, "w") as json_out:
+            json.dump(input_json, json_out)
+    else:
+        # input_json is a pre-existing JSON file
+        input_json_file = input_json
 
     if output_dir is None:
         output_dir = os.path.join(tmpdir, "output")
@@ -246,7 +255,8 @@ def run_cwl_toil(
         input_json_file = None,
         print_command = False,
         restart = False,
-        TOIL_ARGS = TOIL_ARGS
+        TOIL_ARGS = TOIL_ARGS,
+        input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
         ):
     """
     Run a CWL using Toil
@@ -276,10 +286,18 @@ def run_cwl_toil(
         # need to add extra restart args
         TOIL_ARGS = [ *TOIL_ARGS, '--restart', '--jobStore', jobStore ]
 
-    if input_json_file is None:
-        input_json_file = os.path.join(run_dir, "input.json")
-    with open(input_json_file, "w") as json_out:
-        json.dump(input_data, json_out)
+    if not input_is_file:
+        # the input_data is a Python dict to be dumped to JSON file
+        # if there is already a desired path to dump input data to
+        if input_json_file is None:
+            input_json_file = os.path.join(run_dir, "input.json")
+        # dump input data to JSON file
+        with open(input_json_file, "w") as json_out:
+            json.dump(input_data, json_out)
+    else:
+        # input_json is a pre-existing JSON file
+        input_json_file = input_data
+
     if output_dir is None:
         output_dir = os.path.join(run_dir, "output")
     if workDir is None:
