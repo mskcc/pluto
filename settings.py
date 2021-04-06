@@ -82,5 +82,6 @@ DATA_SETS = {
         'microsatellites_file': os.path.join(FIXTURES_DIR, "demo", "microsatellites", 'microsatellites.head500000.list'),
         # $ md5sum microsatellites.head500000.list
         # aa0126e6a916ec82a2837989458918b3  microsatellites.head500000.list
+        'REF_FASTA': REF_FASTA
     }
 }
