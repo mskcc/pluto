@@ -109,7 +109,8 @@ class CWLRunner(object):
                 print_command = self.print_command,
                 input_json_file = self.input_json_file,
                 restart = self.restart,
-                jobStore = self.jobStore
+                jobStore = self.jobStore,
+                input_is_file = self.input_is_file
                 )
         else:
             return()
