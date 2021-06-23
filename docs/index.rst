@@ -11,6 +11,9 @@ Welcome to pluto's documentation!
    :caption: Contents:
    pluto
 
+Utilities module for `pluto-cwl <https://github.com/mskcc/pluto-cwl>`_ and `helix_filters_01 <https://github.com/mskcc/helix_filters_01>`_ repos
+
+
 pluto
 =====
 
