@@ -24,6 +24,10 @@ conda:
 	rm -f "$(CONDASH)"
 
 install: conda
+	pip install sphinx==4.0.2
+
+bash:
+	bash
 
 test:
 	python3 test_tools.py

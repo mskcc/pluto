@@ -2,3 +2,4 @@ __pycache__
 *.pyc
 conda/
 .DS_Store
+docs/_build
