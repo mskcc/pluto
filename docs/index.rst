@@ -7,11 +7,17 @@ Welcome to pluto's documentation!
 =================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
+   pluto
+
+pluto
+=====
 
 .. automodule:: pluto.tools
   :members:
+  :undoc-members:
+.. :show-inheritance:
 
 Indices and tables
 ==================

@@ -12,7 +12,7 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- Project information -----------------------------------------------------
@@ -30,7 +30,20 @@ author = 'Stephen Kelly'
 extensions = [
 'sphinx.ext.autodoc',
 'sphinx.ext.napoleon',
+'sphinx.ext.viewcode'
 ]
+
+# some napoleon settings I have used in the past; https://github.com/stevekm/snsxt/blob/master/docs/conf.py
+# napoleon_google_docstring = False
+# napoleon_include_init_with_doc = True
+# napoleon_include_private_with_doc = True
+# napoleon_include_special_with_doc = True
+# napoleon_use_admonition_for_examples = True
+# napoleon_use_admonition_for_notes = True
+# napoleon_use_admonition_for_references = True
+# napoleon_use_param = True
+# napoleon_use_ivar = True
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -53,12 +66,15 @@ master_doc = 'index'
 # The suffix of source filenames.
 source_suffix = '.rst'
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'default'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
