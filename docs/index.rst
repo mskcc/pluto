@@ -10,7 +10,8 @@ Welcome to pluto's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+.. automodule:: pluto.tools
+  :members:
 
 Indices and tables
 ==================
