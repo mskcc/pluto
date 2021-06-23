@@ -33,6 +33,9 @@ extensions = [
 'sphinx.ext.viewcode'
 ]
 
+# https://stackoverflow.com/questions/5599254/how-to-use-sphinxs-autodoc-to-document-a-classs-init-self-method
+autoclass_content = 'both'
+
 # some napoleon settings I have used in the past; https://github.com/stevekm/snsxt/blob/master/docs/conf.py
 # napoleon_google_docstring = False
 # napoleon_include_init_with_doc = True

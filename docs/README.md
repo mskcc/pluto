@@ -8,3 +8,5 @@ open _build/html/index.html
 ```
 
 - https://brendanhasz.github.io/2019/01/05/sphinx.html
+
+- https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html#example-numpy
