@@ -1,2 +1,4 @@
 __pycache__
 *.pyc
+conda/
+.DS_Store

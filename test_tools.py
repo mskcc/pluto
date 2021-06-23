@@ -9,10 +9,10 @@ from tempfile import TemporaryDirectory
 
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
-    from .tools import md5
+    from .tools import md5_file
 
 if __name__ == "__main__":
-    from tools import md5
+    from tools import md5_file
 
 class TestTools(unittest.TestCase):
     def test_md5(self):
@@ -22,7 +22,7 @@ class TestTools(unittest.TestCase):
             with open(filename, "w") as fout:
                 for line in lines:
                     fout.write(line + '\n')
-            hash = md5(filename)
+            hash = md5_file(filename)
             self.assertEqual(hash, 'f47c75614087a8dd938ba4acff252494')
 
 if __name__ == "__main__":

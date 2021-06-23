@@ -6,13 +6,17 @@ import os
 import subprocess as sp
 import csv
 import json
-from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+try:
+    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+except ImportError:
+    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
 from collections import OrderedDict
 import unittest
 from tempfile import mkdtemp
 import shutil
 from pathlib import Path
 import getpass
+import hashlib
 
 username = getpass.getuser()
 
@@ -121,6 +125,7 @@ class CWLRunner(object):
 
 
 
+
 class CWLFile(os.PathLike):
     """
     wrapper class so I dont have to do
@@ -138,6 +143,10 @@ class CWLFile(os.PathLike):
         return(self.path)
     def __fspath__(self):
         return(self.path)
+
+
+
+
 
 def run_command(args, testcase = None, validate = False, print_stdout = False):
     """
@@ -410,6 +419,23 @@ def dicts2lines(dict_list, comment_list = None):
     for row in dict_list:
         demo_maf_lines.append([ v for v in row.values() ])
     return(demo_maf_lines)
+
+def md5_file(filename):
+    """
+    Get md5sum of a file
+    """
+    with open(filename, "rb") as f:
+        file_hash = hashlib.md5()
+        chunk = f.read(8192)
+        while chunk:
+            file_hash.update(chunk)
+            chunk = f.read(8192)
+    hash = file_hash.hexdigest()
+    return(hash)
+
+
+
+
 
 class TableReader(object):
     """
