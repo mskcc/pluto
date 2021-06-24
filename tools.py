@@ -217,6 +217,15 @@ def run_command(args, testcase = None, validate = False, print_stdout = False):
     testcase: unittest.TestCase
         a test case instance for making assertions
 
+    Returns
+    -------
+    int
+        the command return code
+    str
+        the command stdout
+    str
+        the command stderr
+
     Examples
     -------
     Example usage::
@@ -420,7 +429,7 @@ def run_cwl_toil(
 
 def parse_header_comments(filename, comment_char = '#'):
     """
-    Parse a file with comments in its header to return the comments and the line number to start reader from
+    Parse a file with comments in its header to return the comments and the line number to start reader from.
 
     Parameters
     ----------
@@ -428,6 +437,13 @@ def parse_header_comments(filename, comment_char = '#'):
         path to input file
     comment_char: str
         comment character
+
+    Returns
+    -------
+    list
+        a list of comment lines from the file header
+    int
+        the line number on which file data starts (the line after the last comment)
 
 
     Examples
@@ -454,7 +470,34 @@ def parse_header_comments(filename, comment_char = '#'):
 
 def load_mutations(filename):
     """
-    Load the mutations from a tabular .maf file to use for testing
+    Load the mutations from a tabular .maf file
+
+    Parameters
+    ----------
+    filename: str
+        path to input file
+
+    Returns
+    -------
+    list
+        a list of comment lines from the file
+    list
+        a list of dicts containing the records from the file
+
+    Examples
+    --------
+    Example usage::
+
+        >>> row1 = {'Hugo_Symbol': 'SOX9', 'Chromosome': '1'}
+        >>> row2 = {'Hugo_Symbol': 'BRCA', 'Chromosome': '7'}
+        >>> comments = [ ['# version 2.4'] ]
+        >>> lines = dicts2lines([row1, row2], comments)
+        >>> output_path = write_table('.', 'output.maf', lines)
+        >>> comments, mutations = load_mutations(output_path)
+        >>> comments
+        ['# version 2.4']
+        >>> mutations
+        [OrderedDict([('Hugo_Symbol', 'SOX9'), ('Chromosome', '1')]), OrderedDict([('Hugo_Symbol', 'BRCA'), ('Chromosome', '7')])]
     """
     comments, start_line = parse_header_comments(filename)
     with open(filename) as fin:
@@ -481,6 +524,11 @@ def write_table(tmpdir, filename, lines, delimiter = '\t', filepath = None):
         a list of lists, containing each field to write
     delimiter: str
         character to join the line elements on
+
+    Returns
+    -------
+    str
+        path to output file
     """
     if not filepath:
         filepath = os.path.join(tmpdir, filename)
@@ -507,6 +555,23 @@ def dicts2lines(dict_list, comment_list = None):
     Returns list of lines in the format::
 
         [ ['# comment1'], ['col1', 'col2'], ['val1', 'val2'], ... ]
+
+    Note
+    ----
+    Dict values must be type `str`
+
+    Examples
+    --------
+    Example usage::
+
+        >>> row1 = { 'a':'1', 'b':'2' }
+        >>> row2 = { 'a':'6', 'b':7 }
+        >>> row2 = { 'a':'6', 'b':'7' }
+        >>> lines = dicts2lines(dict_list = [row1, row2], comment_list = comments)
+        >>> lines
+        ['# foo', ['a', 'b'], ['1', '2'], ['6', '7']]
+        >>> output_path = write_table(tmpdir = '.', filename = 'output.txt', lines = lines)
+
     """
     fieldnames = OrderedDict() # use as an ordered set
     # get the ordered fieldnames
@@ -526,7 +591,17 @@ def dicts2lines(dict_list, comment_list = None):
 
 def md5_file(filename):
     """
-    Get md5sum of a file
+    Get md5sum of a file by reading it in small chunks. This avoids issues with Python memory usage when hashing large files.
+
+    Parameters
+    ----------
+    filename: str
+        path to input file
+
+    Returns
+    -------
+    str
+        hash for the file
     """
     with open(filename, "rb") as f:
         file_hash = hashlib.md5()
@@ -697,13 +772,25 @@ class PlutoTestCase(unittest.TestCase):
         )
 
     def setUp(self):
-        """This gets automatically run before each test case"""
+        """
+        This gets automatically run before each test case
+
+        Note
+        ----
+        This method will set up `self.preserve`, `self.tmpdir`, and `self.input`
+        """
         self.preserve = False # save the tmpdir
         self.tmpdir = mkdtemp() # dir = THIS_DIR
         self.input = {} # put the CWL input data here
 
     def tearDown(self):
-        """This gets automatically run after each test case"""
+        """
+        This gets automatically run after each test case
+
+        Note
+        ----
+        This method will delete `self.tmpdir` unless `self.preserve` is `True`
+        """
         if not self.preserve:
             # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
@@ -737,25 +824,48 @@ class PlutoTestCase(unittest.TestCase):
         return(output_json, output_dir)
 
     def run_command(self, *args, **kwargs):
-        """run a CLI command"""
+        """
+        Run a shell command. Wrapper around :func:`~pluto.run_command`
+        """
         returncode, proc_stdout, proc_stderr = run_command(*args, **kwargs)
         return(returncode, proc_stdout, proc_stderr)
 
     # wrappers around other functions in this module to reduce imports needed
     def write_table(self, *args, **kwargs):
+        """
+        Wrapper around :func:`~pluto.write_table`
+        """
         filepath = write_table(*args, **kwargs)
         return(filepath)
 
     def read_table(self, input_file):
-        """simple loading of tabular lines in a file"""
+        """
+        Simple loading of tabular lines in a file
+
+        Parameters
+        ----------
+        input_file: str
+            path to file
+
+        Returns
+        -------
+        list
+            a list of file lines split on whitespace
+        """
         with open(input_file) as fin:
             lines = [ l.strip().split() for l in fin ]
         return(lines)
 
     def load_mutations(self, *args, **kwargs):
+        """
+        Wrapper around :func:`~pluto.load_mutations`
+        """
         comments, mutations = load_mutations(*args, **kwargs)
         return(comments, mutations)
 
     def dicts2lines(self, *args, **kwargs):
+        """
+        Wrapper around :func:`~pluto.dicts2lines`
+        """
         lines = dicts2lines(*args, **kwargs)
         return(lines)
