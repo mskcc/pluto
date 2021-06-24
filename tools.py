@@ -90,10 +90,10 @@ class CWLRunner(object):
         Example usage::
 
             runner = CWLRunner(
-                cwl_file = self.cwl_file,
-                input = self.input,
-                dir = self.dir,
-                verbose = self.verbose)
+                cwl_file = "/path/to/tool.cwl",
+                input = cwl_input,
+                dir = "/run/workflow/here",
+                verbose = True)
             output_json, output_dir, output_json_file = runner.run()
         """
         self.cwl_file = cwl_file
