@@ -53,7 +53,7 @@ MICROSATELLITES_LIST = os.environ.get("MICROSATELLITES_LIST", "/work/ci/resource
 # 33422661 /work/ci/resources/request_files/msisensor/microsatellites.list
 
 DATA_SETS = {
-    "Proj_08390_G": {
+    "Proj_08390_G": { # full sample Argos output
         "DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G"),
         "MAF_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "maf"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "bam"),
@@ -70,7 +70,12 @@ DATA_SETS = {
         'REF_FASTA': REF_FASTA,
         'microsatellites_file': MICROSATELLITES_LIST
     },
-    "demo":{
+    "Proj_1": { # same as Proj_08390_G but both filenames and file contents have been scrubbed; results in different file md5's
+        "MAF_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "maf"),
+        "BAM_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "bam"),
+        'REF_FASTA': REF_FASTA
+    },
+    "demo":{ # small subset of samples on a full project
         "DIR": os.path.join(FIXTURES_DIR, "demo"),
         "MAF_DIR": os.path.join(FIXTURES_DIR, "demo", "maf"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "demo", "bam"),
