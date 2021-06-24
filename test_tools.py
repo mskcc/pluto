@@ -9,13 +9,16 @@ from tempfile import TemporaryDirectory
 
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
-    from .tools import md5_file, PlutoTestCase, CWLFile
+    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader
 
 if __name__ == "__main__":
-    from tools import md5_file, PlutoTestCase, CWLFile
+    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader
 
 class TestMd5(unittest.TestCase):
-    def test_md5(self):
+    def test_md5_file(self):
+        """
+        Test case for getting the md5 of a file
+        """
         with TemporaryDirectory() as tmpdir:
             filename = os.path.join(tmpdir, "file.txt")
             lines = ['foo', 'bar']
@@ -24,6 +27,18 @@ class TestMd5(unittest.TestCase):
                     fout.write(line + '\n')
             hash = md5_file(filename)
             self.assertEqual(hash, 'f47c75614087a8dd938ba4acff252494')
+
+    def test_md5_obj(self):
+        """
+        Test case for getting the md5 of a Python object
+        """
+        obj = [
+            {'a': 1, 'b': "foo"},
+            {'bar': 1.0, 'baz': "buzz"},
+        ]
+        hash = md5_obj(obj)
+        expected_hash = 'fc7c5bd4a1aa9114edb7a2a74175b9e9'
+        self.assertEqual(hash, expected_hash)
 
 
 class TestCopyCWL(PlutoTestCase):

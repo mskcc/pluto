@@ -613,6 +613,18 @@ def md5_file(filename):
     return(hash)
 
 
+def md5_obj(obj):
+    """
+    Get the md5sum of a Python object in memory by converting it to JSON
+
+    Returns
+    -------
+    str
+        the object hash value
+    """
+    hash = hashlib.md5(json.dumps(obj, sort_keys=True).encode('utf-8')).hexdigest()
+    return(hash)
+
 
 
 

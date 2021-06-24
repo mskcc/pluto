@@ -25,6 +25,7 @@ pluto
     pluto.tools.write_table
     pluto.tools.dicts2lines
     pluto.tools.md5_file
+    pluto.tools.md5_obj
 
 Indices and tables
 ==================
