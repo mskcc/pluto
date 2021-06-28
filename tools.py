@@ -42,7 +42,10 @@ class CWLRunner(object):
         debug = False,
         leave_tmpdir = False,
         leave_outputs = False,
-        parallel = False
+        parallel = False,
+        js_console = False,
+        print_stderr = False,
+        use_cache = True
         ):
         """
         Parameters
@@ -113,6 +116,9 @@ class CWLRunner(object):
         self.parallel = parallel
         self.output_dir = output_dir
         self.input_is_file = input_is_file
+        self.js_console = js_console
+        self.print_stderr = print_stderr
+        self.use_cache = use_cache
 
         if dir is None:
             if engine == 'cwltool':
@@ -149,7 +155,10 @@ class CWLRunner(object):
                 leave_outputs = self.leave_outputs,
                 parallel = self.parallel,
                 output_dir = self.output_dir,
-                input_is_file = self.input_is_file
+                input_is_file = self.input_is_file,
+                js_console = self.js_console,
+                print_stderr = self.print_stderr,
+                use_cache = self.use_cache
                 )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
@@ -264,7 +273,10 @@ def run_cwl(
     leave_outputs = False,
     parallel = False,
     output_dir = None,
-    input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
+    input_is_file = False, # if the `input_json` is actually a path to a pre-existing JSON file
+    js_console = False,
+    print_stderr = False,
+    use_cache = True
     ):
     """
     Run the CWL with cwltool / cwl-runner
@@ -301,13 +313,18 @@ def run_cwl(
         print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached!")
         # if the containers are not already all pre-pulled then it can cause issues with parallel jobs all trying to pull the same container to the same filepath
         CWL_ARGS = [ *CWL_ARGS, '--parallel' ]
+    if js_console:
+        CWL_ARGS = [ *CWL_ARGS, '--js-console' ]
+
+    if use_cache:
+        CWL_ARGS = [ *CWL_ARGS, '--cachedir', cache_dir ]
 
     command = [
         "cwl-runner",
         *CWL_ARGS,
         "--outdir", output_dir,
         "--tmpdir-prefix", tmp_dir,
-        "--cachedir", cache_dir,
+        # "--cachedir", cache_dir,
         cwl_file, input_json_file
         ]
     if print_command:
@@ -319,6 +336,9 @@ def run_cwl(
 
     if print_stdout:
         print(proc_stdout)
+
+    if print_stderr:
+        print(proc_stderr)
 
     if returncode != 0:
         print(proc_stderr)
@@ -780,7 +800,9 @@ class PlutoTestCase(unittest.TestCase):
         leave_outputs = False,
         leave_tmpdir = False,
         debug = False,
-        parallel = False
+        parallel = False,
+        js_console = False,
+        print_command = False
         )
 
     def setUp(self):
