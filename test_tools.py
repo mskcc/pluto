@@ -113,6 +113,79 @@ class TestTableHandlers(PlutoTestCase):
             ]
         self.assertEqual(records, expected_records)
 
+    def test_TableReader_without_comments(self):
+        """
+        Test that table without comments is read correctly
+        """
+        maf_lines = [
+        'Hugo_Symbol\tt_depth\tt_alt_count\n',
+        'SUFU\t100\t75\n',
+        'GOT1\t100\t1\n',
+        'SOX9\t100\t0\n'
+        ]
+        input_maf_file = os.path.join(self.tmpdir, "data.txt")
+        with open(input_maf_file, "w") as fout:
+            for line in maf_lines:
+                fout.write(line)
+
+        hash = md5_file(input_maf_file)
+        self.assertEqual(hash, '0906f811a2255324fd4beeb960c53894')
+
+        table_reader = TableReader(input_maf_file)
+        comments = table_reader.comment_lines
+        fieldnames = table_reader.get_fieldnames()
+        records = [ rec for rec in table_reader.read() ]
+
+        expected_comments = []
+        self.assertEqual(comments, expected_comments)
+
+        expected_fieldnames = ['Hugo_Symbol', 't_depth', 't_alt_count']
+        self.assertEqual(fieldnames, expected_fieldnames)
+
+        expected_records = [
+            dict([('Hugo_Symbol', 'SUFU'), ('t_depth', '100'), ('t_alt_count', '75')]),
+            dict([('Hugo_Symbol', 'GOT1'), ('t_depth', '100'), ('t_alt_count', '1')]),
+            dict([('Hugo_Symbol', 'SOX9'), ('t_depth', '100'), ('t_alt_count', '0')])
+            ]
+        self.assertEqual(records, expected_records)
+
+    def test_test_TableReader_ignore_comments(self):
+        """
+        Make sure that the table can be read correctly when comments are ignored
+        Some files have massive comments sections that we shouldn't bother reading
+        """
+        maf_lines = [
+        '# comment 1\n',
+        '# comment 2\n',
+        'Hugo_Symbol\tt_depth\tt_alt_count\n',
+        'SUFU\t100\t75\n',
+        'GOT1\t100\t1\n',
+        'SOX9\t100\t0\n'
+        ]
+        input_maf_file = os.path.join(self.tmpdir, "data.txt")
+        with open(input_maf_file, "w") as fout:
+            for line in maf_lines:
+                fout.write(line)
+
+        table_reader = TableReader(input_maf_file, ignore_comments = True)
+        comments = table_reader.comment_lines
+        fieldnames = table_reader.get_fieldnames()
+        records = [ rec for rec in table_reader.read() ]
+
+        expected_comments = []
+        self.assertEqual(comments, expected_comments)
+
+        expected_fieldnames = ['Hugo_Symbol', 't_depth', 't_alt_count']
+        self.assertEqual(fieldnames, expected_fieldnames)
+
+        expected_records = [
+            dict([('Hugo_Symbol', 'SUFU'), ('t_depth', '100'), ('t_alt_count', '75')]),
+            dict([('Hugo_Symbol', 'GOT1'), ('t_depth', '100'), ('t_alt_count', '1')]),
+            dict([('Hugo_Symbol', 'SOX9'), ('t_depth', '100'), ('t_alt_count', '0')])
+            ]
+        self.assertEqual(records, expected_records)
+
+
 
     def test_load_mutations1(self):
         """

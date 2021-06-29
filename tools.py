@@ -447,7 +447,7 @@ def run_cwl_toil(
         raise
 
 
-def parse_header_comments(filename, comment_char = '#'):
+def parse_header_comments(filename, comment_char = '#', ignore_comments = False):
     """
     Parse a file with comments in its header to return the comments and the line number to start reader from.
 
@@ -484,8 +484,11 @@ def parse_header_comments(filename, comment_char = '#'):
     with open(filename) as fin:
         for i, line in enumerate(fin):
             if line.startswith(comment_char):
-                comments.append(line.strip())
+                if not ignore_comments:
+                    comments.append(line.strip())
                 start_line += 1
+            else:
+                break
     return(comments, start_line)
 
 def load_mutations(filename):
@@ -662,7 +665,7 @@ class TableReader(object):
     ----
     Input file must have column headers!
     """
-    def __init__(self, filename, comment_char = '#', delimiter = '\t'):
+    def __init__(self, filename, comment_char = '#', delimiter = '\t', ignore_comments = False):
         """
         Parameters
         ----------
@@ -686,8 +689,11 @@ class TableReader(object):
         self.comment_char = comment_char
         self.delimiter = delimiter
         # get the comments from the file and find the beginning of the table header
-        self.comments, self.start_line = parse_header_comments(filename, comment_char = self.comment_char)
-        self.comment_lines = [ c + '\n' for c in self.comments ]
+        self.comments = None
+        self.comment_lines = []
+        self.comments, self.start_line = parse_header_comments(filename, comment_char = self.comment_char, ignore_comments = ignore_comments)
+        if self.comments:
+            self.comment_lines = [ c + '\n' for c in self.comments ]
 
     def get_reader(self, fin):
         """
