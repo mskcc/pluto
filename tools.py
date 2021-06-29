@@ -518,6 +518,10 @@ def load_mutations(filename):
         ['# version 2.4']
         >>> mutations
         [OrderedDict([('Hugo_Symbol', 'SOX9'), ('Chromosome', '1')]), OrderedDict([('Hugo_Symbol', 'BRCA'), ('Chromosome', '7')])]
+
+    Notes
+    -----
+    Loads all mutation records into memory at once; for large datasets use TableReader to iterate over records instead
     """
     comments, start_line = parse_header_comments(filename)
     with open(filename) as fin:
@@ -584,12 +588,12 @@ def dicts2lines(dict_list, comment_list = None):
     --------
     Example usage::
 
+        >>> comments = [ ['# foo'] ]
         >>> row1 = { 'a':'1', 'b':'2' }
-        >>> row2 = { 'a':'6', 'b':7 }
         >>> row2 = { 'a':'6', 'b':'7' }
         >>> lines = dicts2lines(dict_list = [row1, row2], comment_list = comments)
         >>> lines
-        ['# foo', ['a', 'b'], ['1', '2'], ['6', '7']]
+        [ ['# foo'], ['a', 'b'], ['1', '2'], ['6', '7']]
         >>> output_path = write_table(tmpdir = '.', filename = 'output.txt', lines = lines)
 
     """
