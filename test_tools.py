@@ -10,10 +10,10 @@ import shutil
 
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
-    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines
+    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
 
 if __name__ == "__main__":
-    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines
+    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
 
 class TestMd5(unittest.TestCase):
     def test_md5_file(self):
@@ -251,6 +251,49 @@ class TestTableHandlers(PlutoTestCase):
         hash = md5_file(input_path)
 
         self.assertEqual(hash, '7180052ec5b7f215a8c0eb263b474618')
+
+
+class TestMafWriter(PlutoTestCase):
+    def test_MafWriter1(self):
+        """
+        Check that MafWriter creates a file identical to the example input
+        """
+        # create dummy input maf file
+        maf_lines = [
+        '# comment 1\n',
+        '# comment 2\n',
+        'Hugo_Symbol\tt_depth\tt_alt_count\n',
+        'SUFU\t100\t75\n',
+        'GOT1\t100\t1\n',
+        'SOX9\t100\t0\n'
+        ]
+        input_maf_file = os.path.join(self.tmpdir, "data.txt")
+        with open(input_maf_file, "w") as fout:
+            for line in maf_lines:
+                fout.write(line)
+
+        hash = md5_file(input_maf_file)
+        self.assertEqual(hash, '584d00e49b0bd7f963af1db46a61d2f0')
+
+        # read the maf file
+        reader = TableReader(input_maf_file)
+        comments = reader.comment_lines
+        fieldnames = reader.get_fieldnames()
+
+        # write out a new copy of the maf file
+        output_file = os.path.join(self.tmpdir, "output.txt")
+        with open(output_file, "w") as fout:
+            writer = MafWriter(fout, fieldnames = fieldnames, comments = comments)
+            writer.writeheader()
+            for row in reader.read():
+                writer.writerow(row)
+
+        hash = md5_file(output_file)
+        self.assertEqual(hash, '584d00e49b0bd7f963af1db46a61d2f0')
+
+
+
+
 
 
 
