@@ -739,6 +739,8 @@ class MafWriter(csv.DictWriter):
 
     NOTE: see this solution if we want to output the raw file lines instead https://stackoverflow.com/questions/29971718/reading-both-raw-lines-and-dicionaries-from-csv-in-python
     Since we have to make assumptions about the delimiter and lineterminator its easier to just use csv.DictWriter directly anyway
+
+    https://github.com/python/cpython/blob/12803c59d54ff1a45a5b08cef82652ef199b3b07/Lib/csv.py#L130
     """
     def __init__(self, f, fieldnames, delimiter = '\t', lineterminator='\n', comments = None, write_comments = True, *args, **kwargs):
         super().__init__(f, fieldnames = fieldnames, delimiter = delimiter, lineterminator=lineterminator, *args, **kwargs)
