@@ -4,3 +4,6 @@ conda/
 .DS_Store
 docs/_build
 docs/build/
+bar/
+foo/
+*.maf
