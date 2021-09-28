@@ -13,15 +13,17 @@ mkdir -p "$TMP_DIR"
 
 set -x
 cwltool \
+--parallel \
 --preserve-environment PATH \
 --preserve-environment SINGULARITY_CACHEDIR \
 --singularity \
---leave-outputs \
 --leave-tmpdir \
 --debug \
 --outdir "$OUTPUT_DIR" \
 --tmpdir-prefix "$TMP_DIR" \
 $@ 2>&1 | tee "${LOG_FILE}"
+
+echo ">>> done: ${RUN_DIR}"
 
 # some extra args to try
 # --parallel
