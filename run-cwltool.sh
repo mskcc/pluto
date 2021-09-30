@@ -13,7 +13,6 @@ mkdir -p "$TMP_DIR"
 
 set -x
 cwltool \
---parallel \
 --preserve-environment PATH \
 --preserve-environment SINGULARITY_CACHEDIR \
 --singularity \
@@ -29,3 +28,5 @@ echo ">>> done: ${RUN_DIR}"
 # --parallel
 # --js-console
 # --cachedir
+
+# NOTE: --parallel causes random failures too often so do not use it by default!
