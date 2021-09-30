@@ -16,6 +16,11 @@ WORK_DIR="${RUN_DIR}/work"
 JOB_STORE="${RUN_DIR}/jobstore"
 STDOUT_LOG_FILE="${RUN_DIR}/stdout.log"
 LOG_FILE="${RUN_DIR}/toil.log"
+SUCCESS_FILE="${RUN_DIR}/success"
+FAIL_FILE="${RUN_DIR}/fail"
+ENV_FILE="${RUN_DIR}/env"
+TIMESTART_FILE="${RUN_DIR}/start"
+TIMESTOP_FILE="${RUN_DIR}/stop"
 [ -e "${RUN_DIR}" ] && echo "ERROR: already exists; $RUN_DIR" && exit 1 || echo ">>> Running in ${RUN_DIR}"
 
 mkdir -p "$OUTPUT_DIR"
@@ -26,6 +31,16 @@ mkdir -p "$WORK_DIR"
 # if we are not restarting, jobStore should not already exist
 # --restart --jobStore "${JOB_STORE}" \
 # if we are restarting, jobStore needs to exist
+
+env > "${ENV_FILE}"
+
+for i in $@; do
+if [ -f "$i" ]; then
+cp "$i" "${RUN_DIR}/"
+fi
+done
+
+date +%s > "${TIMESTART_FILE}"
 
 set -x
 
@@ -44,15 +59,18 @@ set -x
 --maxLocalJobs 100 \
 --cleanWorkDir onSuccess \
 --clean onSuccess \
-$@ ) 2>&1 | tee "${STDOUT_LOG_FILE}"
+$@ ) 2>&1 | tee "${STDOUT_LOG_FILE}" && \
+echo ">>> done: ${RUN_DIR}" && \
+date +%s > "${TIMESTOP_FILE}" && \
+touch "${SUCCESS_FILE}" || \
+touch "${FAIL_FILE}" || \
+date +%s > "${TIMESTOP_FILE}"
 
-echo ">>> done: ${RUN_DIR}"
+
 
 # some extra args that might be needed;
 # --preserve-environment PATH TMPDIR TOIL_LSF_ARGS SINGULARITY_CACHEDIR SINGULARITY_TMPDIR SINGULARITY_PULLDIR PWD \
 # --maxLocalJobs 500 \
-
-
 # TOIL_ARGS = [
 #     '--singularity', # run with Singularity instead of Docker
 #     '--batchSystem', 'lsf', '--disableCaching', 'True', # use LSF on the HPC to submit jobs
