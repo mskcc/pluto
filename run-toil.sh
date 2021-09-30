@@ -1,6 +1,6 @@
 #!/bin/bash
 # wrapper around running Toil with some extra settings
-# you need to source env.sh first for some of this to work
+# you need to source env.sh first for some of this to work; https://github.com/mskcc/pluto-cwl/blob/2742b41ab2946326e45c094cd5468d454b5e5b64/env.juno.sh#L46
 
 # need these to avoid Dockerhub rate limit issues with pipelines; get it from env.sh
 [ $SINGULARITY_DOCKER_USERNAME ] || echo ">>> WARNING: SINGULARITY_DOCKER_USERNAME is not set, HPC jobs might break!"
