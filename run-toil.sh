@@ -8,9 +8,6 @@
 
 set -eu
 
-# NOTE: do I still need to do this??
-unset SINGULARITY_CACHEDIR
-
 TIMESTAMP="$(date +%s)"
 RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
 OUTPUT_DIR="${RUN_DIR}/output"
@@ -44,7 +41,9 @@ set -x
 --disable-host-provenance \
 --preserve-entire-environment \
 --statePollingWait 10 \
---maxLocalJobs 500 \
+--maxLocalJobs 100 \
+--cleanWorkDir onSuccess \
+--clean onSuccess \
 $@ ) 2>&1 | tee "${STDOUT_LOG_FILE}"
 
 echo ">>> done: ${RUN_DIR}"
