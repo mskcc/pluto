@@ -9,6 +9,9 @@
 [ $SINGULARITY_DOCKER_USERNAME ] || echo ">>> WARNING: SINGULARITY_DOCKER_USERNAME is not set, HPC jobs might break!"
 [ $SINGULARITY_DOCKER_PASSWORD ] || echo ">>> WARNING: SINGULARITY_DOCKER_PASSWORD is not set, HPC jobs might break!"
 
+# need this in order for Toil to find pre-cached Singularity containers without re-pulling them all
+[ $CWL_SINGULARITY_CACHE ] || echo ">>> WARNING: CWL_SINGULARITY_CACHE is not set, HPC jobs might break!"
+
 set -eu
 
 # fail fast if Toil is not loaded
