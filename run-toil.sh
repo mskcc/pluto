@@ -4,6 +4,7 @@
 # example usage;
 # $ . env.juno.sh toil
 # $ ./run-toil.sh cwl/some_workflow.cwl input.json
+# $ for i in $(seq 1 5); do ./run-toil.sh cwl/workflow_with_facets.cwl input.json; done
 
 # need these to avoid Dockerhub rate limit issues with pipelines; get it from env.sh
 [ $SINGULARITY_DOCKER_USERNAME ] || echo ">>> WARNING: SINGULARITY_DOCKER_USERNAME is not set, HPC jobs might break!"
@@ -72,6 +73,8 @@ done
 [ -d cwl ] && cp -a cwl "${RUN_DIR}/" || :
 # also save copy of pip install requirements file in case we had changed Toil install stack (it would be saved there)
 [ -f requirements.txt ] && cp -a requirements.txt "${RUN_DIR}/" || :
+# save copy of this script
+cp "$0" "${RUN_DIR}/"
 
 # record start time
 date +%s > "${TIMESTART_FILE}"
