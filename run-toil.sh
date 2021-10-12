@@ -10,7 +10,13 @@
 [ $SINGULARITY_DOCKER_PASSWORD ] || echo ">>> WARNING: SINGULARITY_DOCKER_PASSWORD is not set, HPC jobs might break!"
 
 # need this in order for Toil to find pre-cached Singularity containers without re-pulling them all
-[ $CWL_SINGULARITY_CACHE ] || echo ">>> WARNING: CWL_SINGULARITY_CACHE is not set, HPC jobs might break!"
+[ $CWL_SINGULARITY_CACHE ] || echo ">>> WARNING: CWL_SINGULARITY_CACHE is not set, HPC jobs and parallel scatter jobs might break!"
+
+# NOTE: Might also need these; if using them, make sure all dirs exist ahead of time!
+# export SINGULARITY_CACHEDIR=/path/to/cache
+# export SINGULARITY_TMPDIR=$SINGULARITY_CACHEDIR/tmp
+# export SINGULARITY_PULLDIR=$SINGULARITY_CACHEDIR/pull
+# export CWL_SINGULARITY_CACHE=$SINGULARITY_PULLDIR
 
 set -eu
 
@@ -34,6 +40,7 @@ TIMESTOP_FILE="${RUN_DIR}/stop"
 EXIT_CODE_FILE="${RUN_DIR}/exit_code"
 PID_FILE="${RUN_DIR}/pid"
 HOST_FILE="${RUN_DIR}/hostname"
+TOIL_VERSION_FILE="${RUN_DIR}/toil_version"
 
 # avoid race condition where two scripts start at the same time; add sleep backoff so they dont collide in a loop
 SLEEP_TIME="$(shuf -i 1-10 -n 1)"
@@ -52,6 +59,7 @@ mkdir -p "$WORK_DIR"
 env > "${ENV_FILE}"
 echo "$$" > "${PID_FILE}"
 hostname > "${HOST_FILE}"
+toil-cwl-runner --version > "${TOIL_VERSION_FILE}"
 
 # save copies of input arg files
 for i in $@; do
@@ -59,6 +67,11 @@ if [ -f "$i" ]; then
 cp "$i" "${RUN_DIR}/"
 fi
 done
+
+# if cwl dir exists, save copy of that as well since there might be more changes throughout the pipeline
+[ -d cwl ] && cp -a cwl "${RUN_DIR}/" || :
+# also save copy of pip install requirements file in case we had changed Toil install stack (it would be saved there)
+[ -f requirements.txt ] && cp -a requirements.txt "${RUN_DIR}/" || :
 
 # record start time
 date +%s > "${TIMESTART_FILE}"
