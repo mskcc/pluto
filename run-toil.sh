@@ -27,6 +27,7 @@ which toil-cwl-runner 1>/dev/null
 # files and dirs for the pipeline run
 TIMESTAMP="$(date +%s)"
 RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
+LOG_DIR="${RUN_DIR}/logs"
 OUTPUT_DIR="${RUN_DIR}/output"
 TMP_DIR="${RUN_DIR}/tmp"
 WORK_DIR="${RUN_DIR}/work"
@@ -55,6 +56,7 @@ echo ">>> Running in ${RUN_DIR}"
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TMP_DIR"
 mkdir -p "$WORK_DIR"
+mkdir -p "$LOG_DIR"
 
 # save a copy of the environment
 env > "${ENV_FILE}"
@@ -87,6 +89,13 @@ set -xo pipefail
 
 # run in background subprocess so we can capture the set -x stderr message showing the full command executed
 # capture the exit code for the pipeline when its done
+# NOTE: try to mimic most of the args used here; https://github.com/mskcc/ridgeback/blob/ae51a1a38e8247e3ff1bd1c0791ba4515f9dc6c3/submitter/toil_submitter/toil_jobsubmitter.py#L209-L254
+# TODO: also try using these; some of them broke Toil last time I tried though but its shown as used in prod
+# --writeLogs "${LOG_DIR}" \
+# --realTimeLogging \
+# --coalesceStatusCalls \
+# TODO: what should this be set to? SINGULARITYENV_LC_ALL ; its known that incorrect LC_ALL, etc., settings will break R containers
+# TODO: what should this be set to? TOIL_LSF_ARGS
 ( toil-cwl-runner \
 --logFile "${LOG_FILE}" \
 --outdir "${OUTPUT_DIR}" \
@@ -97,11 +106,19 @@ set -xo pipefail
 --batchSystem lsf --disableCaching True \
 --disable-user-provenance \
 --disable-host-provenance \
---preserve-entire-environment \
+--preserve-environment \
+PATH TMPDIR TOIL_LSF_ARGS SINGULARITY_PULLDIR SINGULARITY_CACHEDIR \
+SINGULARITYENV_LC_ALL PWD  SINGULARITY_DOCKER_USERNAME SINGULARITY_DOCKER_PASSWORD \
 --statePollingWait 10 \
 --maxLocalJobs 100 \
 --cleanWorkDir onSuccess \
 --clean onSuccess \
+--doubleMem \
+--defaultMemory 8G \
+--maxCores 16 \
+--maxDisk 128G \
+--maxMemory 256G \
+--not-strict \
 $@ ) 2>&1 | tee "${STDOUT_LOG_FILE}" ; exit_code="$?"
 
 set +x
