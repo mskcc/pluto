@@ -102,6 +102,7 @@ set -xo pipefail
 --workDir "${WORK_DIR}" \
 --tmpdir-prefix "${TMP_DIR}" \
 --jobStore "${JOB_STORE}" \
+--coalesceStatusCalls \
 --singularity \
 --batchSystem lsf --disableCaching True \
 --disable-user-provenance \
@@ -110,9 +111,10 @@ set -xo pipefail
 PATH TMPDIR TOIL_LSF_ARGS SINGULARITY_PULLDIR SINGULARITY_CACHEDIR \
 SINGULARITYENV_LC_ALL PWD  SINGULARITY_DOCKER_USERNAME SINGULARITY_DOCKER_PASSWORD \
 --statePollingWait 10 \
---maxLocalJobs 100 \
+--maxLocalJobs 500 \
 --cleanWorkDir onSuccess \
 --clean onSuccess \
+--disableProgress \
 --doubleMem \
 --defaultMemory 8G \
 --maxCores 16 \
