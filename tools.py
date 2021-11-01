@@ -20,33 +20,36 @@ import hashlib
 
 username = getpass.getuser()
 
+
 class CWLRunner(object):
     """
     class for running a CWL File
     """
+
     def __init__(self,
-        cwl_file, # str or CWLFile
-        input, # pipeline input dict to be converted to JSON
-        CWL_ARGS = CWL_ARGS,
-        print_stdout = False,
-        dir = None, # directory to run the CWL in and write output to
-        output_dir = None, # directory to save output files to
-        input_json_file = None, # path to write input JSON to if you already have one chosen
-        input_is_file = False, # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
-        verbose = True,
-        testcase = None,
-        engine = "cwltool", # default engine is cwl-runner cwltool
-        print_command = False,
-        restart = False,
-        jobStore = None,
-        debug = False,
-        leave_tmpdir = False,
-        leave_outputs = False,
-        parallel = False,
-        js_console = False,
-        print_stderr = False,
-        use_cache = True
-        ):
+                 cwl_file,  # str or CWLFile
+                 input,  # pipeline input dict to be converted to JSON
+                 CWL_ARGS=CWL_ARGS,
+                 print_stdout=False,
+                 dir=None,  # directory to run the CWL in and write output to
+                 output_dir=None,  # directory to save output files to
+                 input_json_file=None,  # path to write input JSON to if you already have one chosen
+                 # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
+                 input_is_file=False,
+                 verbose=True,
+                 testcase=None,
+                 engine="cwltool",  # default engine is cwl-runner cwltool
+                 print_command=False,
+                 restart=False,
+                 jobStore=None,
+                 debug=False,
+                 leave_tmpdir=False,
+                 leave_outputs=False,
+                 parallel=False,
+                 js_console=False,
+                 print_stderr=False,
+                 use_cache=True
+                 ):
         """
         Parameters
         ----------
@@ -136,56 +139,56 @@ class CWLRunner(object):
         Run the CWL workflow object
         """
         if self.verbose:
-            message = ">>> Running {cwl_file} in {dir}".format(cwl_file = self.cwl_file, dir = self.dir)
+            message = ">>> Running {cwl_file} in {dir}".format(
+                cwl_file=self.cwl_file, dir=self.dir)
             print(message)
 
         if self.engine == 'cwltool':
             output_json, output_dir = run_cwl(
-                testcase = self.testcase,
-                tmpdir = self.dir,
-                input_json = self.input,
-                cwl_file = self.cwl_file,
-                CWL_ARGS = self.CWL_ARGS,
-                print_stdout = self.print_stdout,
-                print_command = self.print_command,
-                check_returncode = False,
-                input_json_file = self.input_json_file,
-                debug = self.debug,
-                leave_tmpdir = self.leave_tmpdir,
-                leave_outputs = self.leave_outputs,
-                parallel = self.parallel,
-                output_dir = self.output_dir,
-                input_is_file = self.input_is_file,
-                js_console = self.js_console,
-                print_stderr = self.print_stderr,
-                use_cache = self.use_cache
-                )
+                testcase=self.testcase,
+                tmpdir=self.dir,
+                input_json=self.input,
+                cwl_file=self.cwl_file,
+                CWL_ARGS=self.CWL_ARGS,
+                print_stdout=self.print_stdout,
+                print_command=self.print_command,
+                check_returncode=False,
+                input_json_file=self.input_json_file,
+                debug=self.debug,
+                leave_tmpdir=self.leave_tmpdir,
+                leave_outputs=self.leave_outputs,
+                parallel=self.parallel,
+                output_dir=self.output_dir,
+                input_is_file=self.input_is_file,
+                js_console=self.js_console,
+                print_stderr=self.print_stderr,
+                use_cache=self.use_cache
+            )
         elif self.engine == 'toil':
             output_json, output_dir = run_cwl_toil(
-                input_data = self.input,
-                cwl_file = self.cwl_file,
-                run_dir = self.dir,
-                print_command = self.print_command,
-                input_json_file = self.input_json_file,
-                restart = self.restart,
-                jobStore = self.jobStore,
-                input_is_file = self.input_is_file
-                )
+                input_data=self.input,
+                cwl_file=self.cwl_file,
+                run_dir=self.dir,
+                print_command=self.print_command,
+                input_json_file=self.input_json_file,
+                restart=self.restart,
+                jobStore=self.jobStore,
+                input_is_file=self.input_is_file
+            )
         else:
             return()
         output_json_file = os.path.join(self.dir, "output.json")
         with open(output_json_file, "w") as fout:
-            json.dump(output_json, fout, indent = 4)
+            json.dump(output_json, fout, indent=4)
         return(output_json, output_dir, output_json_file)
-
-
 
 
 class CWLFile(os.PathLike):
     """
     Wrapper class to locate the full path to a cwl file more conveniently
     """
-    def __init__(self, path, CWL_DIR = CWL_DIR):
+
+    def __init__(self, path, CWL_DIR=CWL_DIR):
         """
         Parameters
         ----------
@@ -202,18 +205,18 @@ class CWLFile(os.PathLike):
             cwl_file = CWLFile("foo.cwl")
         """
         self.path = os.path.join(CWL_DIR, path)
+
     def __str__(self):
         return(self.path)
+
     def __repr__(self):
         return(self.path)
+
     def __fspath__(self):
         return(self.path)
 
 
-
-
-
-def run_command(args, testcase = None, validate = False, print_stdout = False):
+def run_command(args, testcase=None, validate=False, print_stdout=False):
     """
     Helper function to run a shell command easier
 
@@ -242,7 +245,8 @@ def run_command(args, testcase = None, validate = False, print_stdout = False):
         command = [ "foo.py", "arg1", "arg2" ]
         returncode, proc_stdout, proc_stderr = run_command(command, testcase = self, validate = True)
     """
-    process = sp.Popen(args, stdout = sp.PIPE, stderr = sp.PIPE, universal_newlines = True)
+    process = sp.Popen(args, stdout=sp.PIPE, stderr=sp.PIPE,
+                       universal_newlines=True)
     proc_stdout, proc_stderr = process.communicate()
     returncode = process.returncode
     proc_stdout = proc_stdout.strip()
@@ -258,26 +262,27 @@ def run_command(args, testcase = None, validate = False, print_stdout = False):
         testcase.assertEqual(returncode, 0)
     return(returncode, proc_stdout, proc_stderr)
 
+
 def run_cwl(
-    testcase, # 'self' in the unittest.TestCase instance
-    tmpdir, # dir where execution is taking place and files are staged & written
-    input_json, # CWL input data
-    cwl_file, # CWL file to run
-    CWL_ARGS = CWL_ARGS, # default cwltool args to use
-    print_stdout = False,
-    print_command = False,
-    check_returncode = True,
-    input_json_file = None,
-    debug = False,
-    leave_tmpdir = False,
-    leave_outputs = False,
-    parallel = False,
-    output_dir = None,
-    input_is_file = False, # if the `input_json` is actually a path to a pre-existing JSON file
-    js_console = False,
-    print_stderr = False,
-    use_cache = True
-    ):
+    testcase,  # 'self' in the unittest.TestCase instance
+    tmpdir,  # dir where execution is taking place and files are staged & written
+    input_json,  # CWL input data
+    cwl_file,  # CWL file to run
+    CWL_ARGS=CWL_ARGS,  # default cwltool args to use
+    print_stdout=False,
+    print_command=False,
+    check_returncode=True,
+    input_json_file=None,
+    debug=False,
+    leave_tmpdir=False,
+    leave_outputs=False,
+    parallel=False,
+    output_dir=None,
+    input_is_file=False,  # if the `input_json` is actually a path to a pre-existing JSON file
+    js_console=False,
+    print_stderr=False,
+    use_cache=True
+):
     """
     Run the CWL with cwltool / cwl-runner
 
@@ -304,20 +309,20 @@ def run_cwl(
     tmp_dir = os.path.join(tmpdir, 'tmp', "tmp")
 
     if leave_outputs:
-        CWL_ARGS = [ *CWL_ARGS, '--leave-outputs' ]
+        CWL_ARGS = [*CWL_ARGS, '--leave-outputs']
     if leave_tmpdir:
-        CWL_ARGS = [ *CWL_ARGS, '--leave-tmpdir' ]
+        CWL_ARGS = [*CWL_ARGS, '--leave-tmpdir']
     if debug:
-        CWL_ARGS = [ *CWL_ARGS, '--debug' ]
+        CWL_ARGS = [*CWL_ARGS, '--debug']
     if parallel:
         print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached!")
         # if the containers are not already all pre-pulled then it can cause issues with parallel jobs all trying to pull the same container to the same filepath
-        CWL_ARGS = [ *CWL_ARGS, '--parallel' ]
+        CWL_ARGS = [*CWL_ARGS, '--parallel']
     if js_console:
-        CWL_ARGS = [ *CWL_ARGS, '--js-console' ]
+        CWL_ARGS = [*CWL_ARGS, '--js-console']
 
     if use_cache:
-        CWL_ARGS = [ *CWL_ARGS, '--cachedir', cache_dir ]
+        CWL_ARGS = [*CWL_ARGS, '--cachedir', cache_dir]
 
     command = [
         "cwl-runner",
@@ -326,13 +331,12 @@ def run_cwl(
         "--tmpdir-prefix", tmp_dir,
         # "--cachedir", cache_dir,
         cwl_file, input_json_file
-        ]
+    ]
     if print_command:
         print(">>> cwl-runner command:")
-        print(' '.join([ str(c) for c in  command ]) )
+        print(' '.join([str(c) for c in command]))
 
     returncode, proc_stdout, proc_stderr = run_command(command)
-
 
     if print_stdout:
         print(proc_stdout)
@@ -349,26 +353,26 @@ def run_cwl(
     output_json = json.loads(proc_stdout)
     return(output_json, output_dir)
 
+
 def run_cwl_toil(
         input_data,
         cwl_file,
         run_dir,
-        output_dir = None,
-        workDir = None,
-        jobStore = None,
-        tmpDir = None,
-        logFile = None,
-        input_json_file = None,
-        print_command = False,
-        restart = False,
-        TOIL_ARGS = TOIL_ARGS,
-        input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
-        ):
+        output_dir=None,
+        workDir=None,
+        jobStore=None,
+        tmpDir=None,
+        logFile=None,
+        input_json_file=None,
+        print_command=False,
+        restart=False,
+        TOIL_ARGS=TOIL_ARGS,
+        input_is_file=False  # if the `input_json` is actually a path to a pre-existing JSON file
+):
     """
     Run a CWL using Toil
     """
     run_dir = os.path.abspath(run_dir)
-
 
     # if we are not restarting, jobStore should not already exist
     if not restart:
@@ -377,7 +381,7 @@ def run_cwl_toil(
         if os.path.exists(jobStore):
             print(">>> ERROR: Job store already exists; ", jobStore)
             sys.exit(1)
-        TOIL_ARGS = [ *TOIL_ARGS, '--jobStore', jobStore ]
+        TOIL_ARGS = [*TOIL_ARGS, '--jobStore', jobStore]
 
     # if we are restarting, jobStore needs to exist
     else:
@@ -390,7 +394,7 @@ def run_cwl_toil(
             print(">>> ERROR: jobStore does not exist; ", jobStore)
             sys.exit(1)
         # need to add extra restart args
-        TOIL_ARGS = [ *TOIL_ARGS, '--restart', '--jobStore', jobStore ]
+        TOIL_ARGS = [*TOIL_ARGS, '--restart', '--jobStore', jobStore]
 
     if not input_is_file:
         # the input_data is a Python dict to be dumped to JSON file
@@ -427,12 +431,11 @@ def run_cwl_toil(
         '--workDir', workDir,
         '--tmpdir-prefix', tmpDirPrefix,
         cwl_file, input_json_file
-        ]
-
+    ]
 
     if print_command:
         print(">>> toil-cwl-runner command:")
-        print(' '.join([ str(c) for c in  command ]) )
+        print(' '.join([str(c) for c in command]))
 
     returncode, proc_stdout, proc_stderr = run_command(command)
 
@@ -447,7 +450,7 @@ def run_cwl_toil(
         raise
 
 
-def parse_header_comments(filename, comment_char = '#', ignore_comments = False):
+def parse_header_comments(filename, comment_char='#', ignore_comments=False):
     """
     Parse a file with comments in its header to return the comments and the line number to start reader from.
 
@@ -491,6 +494,7 @@ def parse_header_comments(filename, comment_char = '#', ignore_comments = False)
                 break
     return(comments, start_line)
 
+
 def load_mutations(filename):
     """
     Load the mutations from a tabular .maf file
@@ -531,11 +535,12 @@ def load_mutations(filename):
         while start_line > 0:
             next(fin)
             start_line -= 1
-        reader = csv.DictReader(fin, delimiter = '\t')
-        mutations = [ row for row in reader ]
+        reader = csv.DictReader(fin, delimiter='\t')
+        mutations = [row for row in reader]
     return(comments, mutations)
 
-def write_table(tmpdir, filename, lines, delimiter = '\t', filepath = None):
+
+def write_table(tmpdir, filename, lines, delimiter='\t', filepath=None):
     """
     Write a table to a temp location
 
@@ -565,7 +570,8 @@ def write_table(tmpdir, filename, lines, delimiter = '\t', filepath = None):
             f.write(line_str)
     return(filepath)
 
-def dicts2lines(dict_list, comment_list = None):
+
+def dicts2lines(dict_list, comment_list=None):
     """
     Helper function to convert a list of dicts into a list of lines to use with write_table
     create a list of line parts to pass for write_table
@@ -600,7 +606,7 @@ def dicts2lines(dict_list, comment_list = None):
         >>> output_path = write_table(tmpdir = '.', filename = 'output.txt', lines = lines)
 
     """
-    fieldnames = OrderedDict() # use as an ordered set
+    fieldnames = OrderedDict()  # use as an ordered set
     # get the ordered fieldnames
     for row in dict_list:
         for key in row.keys():
@@ -610,11 +616,12 @@ def dicts2lines(dict_list, comment_list = None):
     if comment_list:
         for line in comment_list:
             demo_maf_lines.append(line)
-    fieldnames = [ f for f in fieldnames.keys() ]
+    fieldnames = [f for f in fieldnames.keys()]
     demo_maf_lines.append(fieldnames)
     for row in dict_list:
-        demo_maf_lines.append([ v for v in row.values() ])
+        demo_maf_lines.append([v for v in row.values()])
     return(demo_maf_lines)
+
 
 def md5_file(filename):
     """
@@ -649,7 +656,8 @@ def md5_obj(obj):
     str
         the object hash value
     """
-    hash = hashlib.md5(json.dumps(obj, sort_keys=True).encode('utf-8')).hexdigest()
+    hash = hashlib.md5(json.dumps(
+        obj, sort_keys=True).encode('utf-8')).hexdigest()
     return(hash)
 
 
@@ -663,7 +671,8 @@ class TableReader(object):
     ----
     Input file must have column headers!
     """
-    def __init__(self, filename, comment_char = '#', delimiter = '\t', ignore_comments = False):
+
+    def __init__(self, filename, comment_char='#', delimiter='\t', ignore_comments=False):
         """
         Parameters
         ----------
@@ -689,9 +698,10 @@ class TableReader(object):
         # get the comments from the file and find the beginning of the table header
         self.comments = None
         self.comment_lines = []
-        self.comments, self.start_line = parse_header_comments(filename, comment_char = self.comment_char, ignore_comments = ignore_comments)
+        self.comments, self.start_line = parse_header_comments(
+            filename, comment_char=self.comment_char, ignore_comments=ignore_comments)
         if self.comments:
-            self.comment_lines = [ c + '\n' for c in self.comments ]
+            self.comment_lines = [c + '\n' for c in self.comments]
 
     def get_reader(self, fin):
         """
@@ -702,14 +712,14 @@ class TableReader(object):
         while start_line > 0:
             next(fin)
             start_line -= 1
-        reader = csv.DictReader(fin, delimiter = self.delimiter)
+        reader = csv.DictReader(fin, delimiter=self.delimiter)
         return(reader)
 
     def get_fieldnames(self):
         """
         returns the list of fieldnames for the table
         """
-        with open(self.filename,'r') as fin:
+        with open(self.filename, 'r') as fin:
             reader = self.get_reader(fin)
             return(reader.fieldnames)
 
@@ -717,7 +727,7 @@ class TableReader(object):
         """
         iterable to get the record rows from the table, skipping the comments
         """
-        with open(self.filename,'r') as fin:
+        with open(self.filename, 'r') as fin:
             reader = self.get_reader(fin)
             for row in reader:
                 yield(row)
@@ -742,16 +752,15 @@ class MafWriter(csv.DictWriter):
 
     https://github.com/python/cpython/blob/12803c59d54ff1a45a5b08cef82652ef199b3b07/Lib/csv.py#L130
     """
-    def __init__(self, f, fieldnames, delimiter = '\t', lineterminator='\n', comments = None, write_comments = True, *args, **kwargs):
-        super().__init__(f, fieldnames = fieldnames, delimiter = delimiter, lineterminator=lineterminator, *args, **kwargs)
+
+    def __init__(self, f, fieldnames, delimiter='\t', lineterminator='\n', comments=None, write_comments=True, *args, **kwargs):
+        super().__init__(f, fieldnames=fieldnames, delimiter=delimiter,
+                         lineterminator=lineterminator, *args, **kwargs)
         if comments:
             if write_comments:
                 for line in comments:
-                    f.write(line) # + lineterminator ; comments should have newline appended already
-
-
-
-
+                    # + lineterminator ; comments should have newline appended already
+                    f.write(line)
 
 
 class PlutoTestCase(unittest.TestCase):
@@ -816,18 +825,18 @@ class PlutoTestCase(unittest.TestCase):
                 self.assertEqual(mutations, expected_mutations)
     """
     # global settings for all test cases in the instance
-    cwl_file = None # make sure to override this in subclasses before using the runner
+    cwl_file = None  # make sure to override this in subclasses before using the runner
     DATA_SETS = DATA_SETS
     KNOWN_FUSIONS_FILE = KNOWN_FUSIONS_FILE
     IMPACT_FILE = IMPACT_FILE
     runner_args = dict(
-        leave_outputs = False,
-        leave_tmpdir = False,
-        debug = False,
-        parallel = False,
-        js_console = False,
-        print_command = False
-        )
+        leave_outputs=False,
+        leave_tmpdir=False,
+        debug=False,
+        parallel=False,
+        js_console=False,
+        print_command=False
+    )
 
     def setUp(self):
         """
@@ -837,9 +846,9 @@ class PlutoTestCase(unittest.TestCase):
         ----
         This method will set up `self.preserve`, `self.tmpdir`, and `self.input`
         """
-        self.preserve = False # save the tmpdir
-        self.tmpdir = mkdtemp() # dir = THIS_DIR
-        self.input = {} # put the CWL input data here
+        self.preserve = False  # save the tmpdir
+        self.tmpdir = mkdtemp()  # dir = THIS_DIR
+        self.input = {}  # put the CWL input data here
 
     def tearDown(self):
         """
@@ -853,7 +862,7 @@ class PlutoTestCase(unittest.TestCase):
             # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
 
-    def run_cwl(self, input = None, cwl_file = None):
+    def run_cwl(self, input=None, cwl_file=None):
         """
         Run the CWL specified for the test case
 
@@ -879,9 +888,9 @@ class PlutoTestCase(unittest.TestCase):
             testcase=self,
             engine=engine,
             **self.runner_args)
-            # debug = self.debug,
-            # leave_tmpdir = self.leave_tmpdir,
-            # leave_outputs = self.leave_outputs
+        # debug = self.debug,
+        # leave_tmpdir = self.leave_tmpdir,
+        # leave_outputs = self.leave_outputs
         output_json, output_dir, output_json_file = runner.run()
         return(output_json, output_dir)
 
@@ -915,7 +924,7 @@ class PlutoTestCase(unittest.TestCase):
             a list of file lines split on whitespace
         """
         with open(input_file) as fin:
-            lines = [ l.strip().split() for l in fin ]
+            lines = [l.strip().split() for l in fin]
         return(lines)
 
     def load_mutations(self, *args, **kwargs):
