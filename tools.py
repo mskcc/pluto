@@ -7,9 +7,9 @@ import subprocess as sp
 import csv
 import json
 try:
-    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, ENABLE_TOIL_ENGINE
 except ImportError:
-    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, ENABLE_TOIL_ENGINE
 from collections import OrderedDict
 import unittest
 from tempfile import mkdtemp
@@ -868,12 +868,16 @@ class PlutoTestCase(unittest.TestCase):
             input = self.input
         if cwl_file is None:
             cwl_file = CWLFile(self.cwl_file)
+        engine = "cwltool"
+        if ENABLE_TOIL_ENGINE:
+            engine = "toil"
         runner = CWLRunner(
-            cwl_file = cwl_file,
-            input = input,
-            verbose = False,
-            dir = self.tmpdir,
-            testcase = self,
+            cwl_file=cwl_file,
+            input=input,
+            verbose=False,
+            dir=self.tmpdir,
+            testcase=self,
+            engine=engine,
             **self.runner_args)
             # debug = self.debug,
             # leave_tmpdir = self.leave_tmpdir,

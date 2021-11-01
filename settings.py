@@ -5,6 +5,8 @@ import os
 
 # disable execution of very large tests;
 ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
+ENABLE_LONG_RUNNING_TESTS = os.environ.get('LONG_RUNNING_TESTS') == "True"
+ENABLE_TOIL_ENGINE = os.environ.get('TOIL_ENGINE') == "True"
 # $ LARGE_TESTS=True python3 tests
 # tag large test cases with:
 # @unittest.skipIf(ENABLE_LARGE_TESTS != True, "is a large test")
@@ -28,10 +30,17 @@ TOIL_ARGS = [
     '--disable-user-provenance', '--disable-host-provenance',
     '--preserve-entire-environment', # need to propagate the env vars for Singularity, etc., into the HPC jobs
     '--retryCount', '1',
-    '--maxLocalJobs', '500', # run up to 500 jobs at once; not actually "local", this includes HPC jobs
-    '--statePollingWait', '10', # check available jobs every 10 seconds instead of after every job is submitted
-    '--clean', 'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
-    '--cleanWorkDir', 'onSuccess' # deletion of temporary worker directory # {always,onError,never,onSuccess}
+    '--disableProgress',  # Disable live progress bar
+    '--doubleMem',  # retry with double memory for mem limit failed jobs
+    '--coalesceStatusCalls',  # optimized call to LSF, also cleans up LSF output from logs
+    # run up to 500 jobs at once; not actually "local", this includes HPC jobs
+    '--maxLocalJobs', '500',
+    # check available jobs every 10 seconds instead of after every job is submitted
+    '--statePollingWait', '10',
+    # deletion of the jobStore # {always,onError,never,onSuccess}
+    '--clean', 'onSuccess',
+    # deletion of temporary worker directory # {always,onError,never,onSuccess}
+    '--cleanWorkDir', 'onSuccess'
 ]
 
 # location on the filesystem for static fixtures
