@@ -182,49 +182,6 @@ class TestSerializeCWLDirOutput(PlutoTestCase):
         self.maxDiff = None
         self.assertDictEqual(output_json, expected_output)
 
-# NOTE: This test case was having issues on Linux, it might have some weird non-POSIX thing going on, not sure, only worked on macOS
-# class TestSerializeCWLSubDirOutput(PlutoTestCase):
-#     """
-#     Test cases for when the output contains subdirectories
-#     """
-#     CWL_DIR = os.path.abspath('cwl')
-#     cwl_file = CWLFile('subdir_workflow.cwl', CWL_DIR = CWL_DIR)
-#
-#     @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
-#     def test_put_in_subdir1(self):
-#         """
-#         Test case for dir output object
-#         """
-#         self.preserve = True
-#         print(self.tmpdir)
-#         lines = [
-#             ['# comment 1']
-#         ]
-#         input = self.write_table(tmpdir = self.tmpdir, filename = 'input.maf', lines = lines)
-#
-#         self.input = {
-#             "item": {"class": "File", "path": input},
-#             "output_dir_name":  'foo',
-#             "output_subdir_name":  'bar',
-#             }
-#         output_json, output_dir = self.run_cwl()
-#
-#         expected_output = {
-#             # /.../output/foo
-#             'output_dir': ODir(name = 'foo', dir = output_dir, items = [
-#                 OFile(name = 'input.maf', size = 12, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e')
-#             ]),
-#             # /.../output/bar/foo
-#             'output_subdir': ODir(name = 'bar', dir = output_dir, items = [
-#                 ODir(name = 'foo', items = [
-#                     OFile( # /.../output/bar/foo/input.maf
-#                     name = 'input.maf', size = 12, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e')
-#                 ])
-#             ])
-#             }
-#         self.maxDiff = None
-#         self.assertDictEqual(output_json, expected_output)
-#         self.assertEqual(output_json, expected_output)
 
 class TestSerializeCWLSubDirOutput(PlutoTestCase):
     """
