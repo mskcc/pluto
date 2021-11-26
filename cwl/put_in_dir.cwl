@@ -1,7 +1,7 @@
 #!/usr/bin/env cwl-runner
 
 # tool for copying a File or Directory into a subdir
-
+# NOTE: This appears to have issues copying a dir under Linux??
 cwlVersion: v1.0
 
 class: CommandLineTool
