@@ -6,6 +6,8 @@
 # $ ./run-toil.sh cwl/some_workflow.cwl input.json
 # $ for i in $(seq 1 5); do ./run-toil.sh cwl/workflow_with_facets.cwl input.json; done
 
+
+# ~~~~~ ENV VARS TO KEEP THINGS FROM BREAKING ~~~~~ #
 # need these to avoid Dockerhub rate limit issues with pipelines; get it from env.sh
 [ $SINGULARITY_DOCKER_USERNAME ] || echo ">>> WARNING: SINGULARITY_DOCKER_USERNAME is not set, HPC jobs might break!"
 [ $SINGULARITY_DOCKER_PASSWORD ] || echo ">>> WARNING: SINGULARITY_DOCKER_PASSWORD is not set, HPC jobs might break!"
@@ -13,18 +15,36 @@
 # need this in order for Toil to find pre-cached Singularity containers without re-pulling them all
 [ $CWL_SINGULARITY_CACHE ] || echo ">>> WARNING: CWL_SINGULARITY_CACHE is not set, HPC jobs and parallel scatter jobs might break!"
 
+# SINGULARITY_PULLDIR is the same location as CWL_SINGULARITY_CACHE ;
+# SINGULARITY_PULLDIR gets used automatically by Singularity but can cause undesired results when cwltool tries to pull images
+# not to be confused with SINGULARITY_PULLFOLDER ... https://github.com/common-workflow-language/cwltool/blob/a3cc4fcd29792342832b3571b27096a18b41d252/cwltool/singularity.py#L134
+[ $SINGULARITY_PULLDIR ] && echo ">>> WARNING: SINGULARITY_PULLDIR is set, if Toil tries to pull Singularity containers they might get saved to the wrong place!"
+
+
+# Need this to prevent R UTF.8 parse errors that make libraries not found
+# export SINGULARITYENV_LC_ALL=en_US.UTF-8
+[ $SINGULARITYENV_LC_ALL ] || echo ">>> WARNING: SINGULARITYENV_LC_ALL is not set, some R and Facets jobs might break!"
+
+# Need this for extra LSF HPC settings; e.g.
+# export TOIL_LSF_ARGS='-sla FOOBAR'
+[ $TOIL_LSF_ARGS ] || echo ">>> WARNING: TOIL_LSF_ARGS is not set, HPC jobs might take a long time to run!"
+
 # NOTE: Might also need these; if using them, make sure all dirs exist ahead of time!
 # export SINGULARITY_CACHEDIR=/path/to/cache
 # export SINGULARITY_TMPDIR=$SINGULARITY_CACHEDIR/tmp
 # export SINGULARITY_PULLDIR=$SINGULARITY_CACHEDIR/pull
 # export CWL_SINGULARITY_CACHE=$SINGULARITY_PULLDIR
+# ~~~~~~~~~~~~~~~ #
 
+
+# ~~~~~ SETUP FOR AN ISOLATED SELF-CONTAINED HEADACHE-FREE PIPELINE RUN ~~~~~ #
+# make sure we fail fast if there's an error
 set -eu
 
 # fail fast if Toil is not loaded
 which toil-cwl-runner 1>/dev/null
 
-# files and dirs for the pipeline run
+# files and dirs for this current pipeline run instance
 TIMESTAMP="$(date +%s)"
 RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
 LOG_DIR="${RUN_DIR}/logs"
@@ -44,7 +64,9 @@ PID_FILE="${RUN_DIR}/pid"
 HOST_FILE="${RUN_DIR}/hostname"
 TOIL_VERSION_FILE="${RUN_DIR}/toil_version"
 
-# avoid race condition where two scripts start at the same time; add sleep backoff so they dont collide in a loop
+
+# avoid race condition where two run-toil.sh scripts start at the same time;
+# add sleep backoff so they dont collide in a loop
 SLEEP_TIME="$(shuf -i 1-10 -n 1)"
 [ -e "${RUN_DIR}" ] && \
 echo "ERROR: already exists; ${RUN_DIR}, waiting ${SLEEP_TIME}s before exiting" && \
@@ -52,17 +74,20 @@ sleep "${SLEEP_TIME}" && \
 exit 1 || \
 echo ">>> Running in ${RUN_DIR}"
 
+
 # start setting up the run dir
 mkdir -p "$OUTPUT_DIR"
 mkdir -p "$TMP_DIR"
 mkdir -p "$WORK_DIR"
 mkdir -p "$LOG_DIR"
 
+
 # save a copy of the environment
 env > "${ENV_FILE}"
 echo "$$" > "${PID_FILE}"
 hostname > "${HOST_FILE}"
 toil-cwl-runner --version > "${TOIL_VERSION_FILE}"
+
 
 # save copies of input arg files
 for i in $@; do
@@ -71,6 +96,7 @@ cp "$i" "${RUN_DIR}/"
 fi
 done
 
+
 # if cwl dir exists, save copy of that as well since there might be more changes throughout the pipeline
 [ -d cwl ] && cp -a cwl "${RUN_DIR}/" || :
 # also save copy of pip install requirements file in case we had changed Toil install stack (it would be saved there)
@@ -78,14 +104,20 @@ done
 # save copy of this script
 cp "$0" "${RUN_DIR}/"
 
+
 # record start time
 date +%s > "${TIMESTART_FILE}"
+# ~~~~~~~~~~~~~~~ #
 
+
+
+# ~~~~~ START RUNNING THE PIPELINE ~~~~~ #
 # turn these off because we need to track failures
 set +e
 set +u
-# turn this on because we need to track command used and pipeline failures through tee pipe
+# turn this on because we want to track the final command executed and pipeline failures through tee pipe
 set -xo pipefail
+
 
 # run in background subprocess so we can capture the set -x stderr message showing the full command executed
 # capture the exit code for the pipeline when its done
@@ -93,9 +125,7 @@ set -xo pipefail
 # TODO: also try using these; some of them broke Toil last time I tried though but its shown as used in prod
 # --writeLogs "${LOG_DIR}" \
 # --realTimeLogging \
-# --coalesceStatusCalls \
-# TODO: what should this be set to? SINGULARITYENV_LC_ALL ; its known that incorrect LC_ALL, etc., settings will break R containers
-# TODO: what should this be set to? TOIL_LSF_ARGS
+# --coalesceStatusCalls \ # TODO: Get this working!! it greatly reduces size of logs but it broke on some dev Toil branches
 ( toil-cwl-runner \
 --logFile "${LOG_FILE}" \
 --outdir "${OUTPUT_DIR}" \
@@ -144,6 +174,9 @@ exit $exit_code
 
 
 
+
+
+# ~~~~~~~ extra notes ~~~~~~ #
 # some extra Toil args that might be needed;
 # --preserve-environment PATH TMPDIR TOIL_LSF_ARGS SINGULARITY_CACHEDIR SINGULARITY_TMPDIR SINGULARITY_PULLDIR PWD \
 # --maxLocalJobs 500 \
