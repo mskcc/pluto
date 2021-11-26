@@ -27,7 +27,7 @@
 
 # Need this for extra LSF HPC settings; e.g.
 # export TOIL_LSF_ARGS='-sla FOOBAR'
-[ $TOIL_LSF_ARGS ] || echo ">>> WARNING: TOIL_LSF_ARGS is not set, HPC jobs might take a long time to run!"
+[ "$TOIL_LSF_ARGS" ] || echo ">>> WARNING: TOIL_LSF_ARGS is not set, HPC jobs might take a long time to run!"
 
 # NOTE: Might also need these; if using them, make sure all dirs exist ahead of time!
 # export SINGULARITY_CACHEDIR=/path/to/cache
@@ -149,6 +149,9 @@ SINGULARITYENV_LC_ALL PWD  SINGULARITY_DOCKER_USERNAME SINGULARITY_DOCKER_PASSWO
 --maxDisk 128G \
 --maxMemory 256G \
 --not-strict \
+--coalesceStatusCalls \
+--writeLogs "${LOG_DIR}" \
+--realTimeLogging \
 $@ ) 2>&1 | tee "${STDOUT_LOG_FILE}" ; exit_code="$?"
 
 set +x
