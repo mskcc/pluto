@@ -24,9 +24,7 @@ conda:
 	rm -f "$(CONDASH)"
 
 install: conda
-	pip install sphinx==4.0.2 \
-	cwltool==2.0.20200126090152 \
-	cwlref-runner==1.0
+	pip install -r requirements.txt
 
 bash:
 	bash
