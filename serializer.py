@@ -53,7 +53,10 @@ And still use this;
 import os
 from copy import deepcopy
 from typing import List
-from settings import CWL_ENGINE
+try:
+    from settings import CWL_ENGINE
+except ModuleNotFoundError:
+    from .settings import CWL_ENGINE
 
 class OFile(dict):
     """

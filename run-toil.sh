@@ -5,6 +5,7 @@
 # $ . env.juno.sh toil
 # $ ./run-toil.sh cwl/some_workflow.cwl input.json
 # $ for i in $(seq 1 5); do ./run-toil.sh cwl/workflow_with_facets.cwl input.json; done
+# $ LOCAL=True ./run-toil.sh cwl/workflow_with_facets.cwl input.json
 
 
 # ~~~~~ ENV VARS TO KEEP THINGS FROM BREAKING ~~~~~ #
@@ -118,6 +119,13 @@ set +u
 # turn this on because we want to track the final command executed and pipeline failures through tee pipe
 set -xo pipefail
 
+# env var to run without LSF
+LOCAL="${LOCAL:-False}"
+if [ "${LOCAL}" == "False" ] ; then
+    LSF_COMMAND=" --batchSystem lsf "
+else
+    LSF_COMMAND=""
+fi
 
 # run in background subprocess so we can capture the set -x stderr message showing the full command executed
 # capture the exit code for the pipeline when its done
@@ -132,8 +140,7 @@ set -xo pipefail
 --workDir "${WORK_DIR}" \
 --tmpdir-prefix "${TMP_DIR}" \
 --jobStore "${JOB_STORE}" \
---singularity \
---batchSystem lsf --disableCaching True \
+--singularity --disableCaching True $LSF_COMMAND \
 --disable-user-provenance \
 --disable-host-provenance \
 --preserve-environment \
