@@ -10,8 +10,10 @@ from serializer import OFile, ODir
 
 if __name__ != "__main__":
     from .tools import PlutoTestCase, CWLFile
+    from .settings import CWL_ENGINE
 if __name__ == "__main__":
     from tools import PlutoTestCase, CWLFile
+    from settings import CWL_ENGINE
 
 class TestSerializer(PlutoTestCase):
     def test_cwl_file1(self):
@@ -27,6 +29,10 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/Sample4_purity.seg',
             'size': 488
         }
+        if CWL_ENGINE == 'toil':
+            expected['nameext'] = '.seg'
+            expected['nameroot'] = 'Sample4_purity'
+            expected.pop('path')
         self.assertDictEqual(obj, expected)
         self.assertEqual(obj, expected)
 
@@ -43,6 +49,10 @@ class TestSerializer(PlutoTestCase):
             'path': 'Sample4_purity.seg',
             'size': 488
         }
+        if CWL_ENGINE == 'toil':
+            expected['nameext'] = '.seg'
+            expected['nameroot'] = 'Sample4_purity'
+            expected.pop('path')
         self.assertDictEqual(obj, expected)
         self.assertEqual(obj, expected)
 
@@ -58,6 +68,10 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/portal',
             'listing': []
         }
+        if CWL_ENGINE == 'toil':
+            expected['nameext'] = ''
+            expected['nameroot'] = 'portal'
+            expected.pop('path')
         self.assertDictEqual(obj, expected)
         self.assertEqual(obj, expected)
 
@@ -85,6 +99,11 @@ class TestSerializer(PlutoTestCase):
                 }
             ]
         }
+        if CWL_ENGINE == 'toil':
+            expected['nameext'] = ''
+            expected['nameroot'] = 'portal'
+            expected.pop('path')
+            expected['listing'][0].pop('path')
         self.maxDiff = None
         self.assertDictEqual(_dir, expected)
         self.assertEqual(_dir, expected)
@@ -111,6 +130,11 @@ class TestSerializer(PlutoTestCase):
                 }
             ]
         }
+        if CWL_ENGINE == 'toil':
+            expected['nameext'] = ''
+            expected['nameroot'] = 'portal'
+            expected.pop('path')
+            expected['listing'][0].pop('path')
         self.maxDiff = None
         self.assertDictEqual(_dir, expected)
         self.assertEqual(_dir, expected)

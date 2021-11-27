@@ -32,3 +32,5 @@ bash:
 test:
 	python3 test_tools.py
 	python3 test_serializer.py
+	CWL_ENGINE=toil python3 test_tools.py
+	CWL_ENGINE=toil python3 test_serializer.py

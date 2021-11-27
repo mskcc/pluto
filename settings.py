@@ -11,10 +11,36 @@ ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
 if ENABLE_LARGE_TESTS:
     print(">>> Enabling execution of large test cases...")
 
+# use LSF with Toil
+USE_LSF = os.environ.get('USE_LSF') == "True"
+
+# whether Toil or cwltool should be used
+CWL_ENGINE = os.environ.get('CWL_ENGINE', None)
+
+# the location of this file
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+# need to set some default locations for some dir's based on the standard submodule structure
+# TODO: make env vars for this
 CWL_DIR = os.path.join(os.path.dirname(THIS_DIR), "cwl") # ../cwl
 REF_DIR = os.path.join(os.path.dirname(THIS_DIR), "ref") # ../ref
 EXAMPLES_DIR = os.path.join(os.path.dirname(THIS_DIR), "examples") # ../examples
+
+# location to run workflows, mostly needed for use with LSF, this needs to be accessible cluster-wide
+# This is only used when running with Toil + LSF
+TMP_DIR = os.environ.get("TMP_DIR")
+# if no dir was passed then use the pwd
+if not TMP_DIR:
+    TMP_DIR = os.path.join(os.getcwd(), "tmp")
+
+# if the tmpdir used in PlutoTestCase should be preserved (not deleted) after tests complete
+PRESERVE_TEST_DIR = os.environ.get('PRESERVE_TEST_DIR', None)
+if PRESERVE_TEST_DIR == "True":
+    PRESERVE_TEST_DIR = True
+
+# if the CWL runner command should be printed before running it
+PRINT_COMMAND = os.environ.get('PRINT_COMMAND', None)
+if PRINT_COMMAND == "True":
+    PRINT_COMMAND = True
 
 # common args to be included in all cwltool invocations
 CWL_ARGS = [
@@ -24,15 +50,31 @@ CWL_ARGS = [
 ]
 TOIL_ARGS = [
     '--singularity', # run with Singularity instead of Docker
-    '--batchSystem', 'lsf', '--disableCaching', 'True', # use LSF on the HPC to submit jobs
     '--disable-user-provenance', '--disable-host-provenance',
-    '--preserve-entire-environment', # need to propagate the env vars for Singularity, etc., into the HPC jobs
+    # need to propagate the env vars for Singularity, etc., into the HPC jobs
+    '--preserve-environment', 'PATH', 'TMPDIR', 'TOIL_LSF_ARGS', 'SINGULARITY_PULLDIR', 'SINGULARITY_CACHEDIR',
+    'SINGULARITYENV_LC_ALL', 'PWD',  'SINGULARITY_DOCKER_USERNAME', 'SINGULARITY_DOCKER_PASSWORD',
     '--retryCount', '1',
-    '--maxLocalJobs', '500', # run up to 500 jobs at once; not actually "local", this includes HPC jobs
     '--statePollingWait', '10', # check available jobs every 10 seconds instead of after every job is submitted
     '--clean', 'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
-    '--cleanWorkDir', 'onSuccess' # deletion of temporary worker directory # {always,onError,never,onSuccess}
+    '--cleanWorkDir', 'onSuccess', # deletion of temporary worker directory # {always,onError,never,onSuccess}
+    '--doubleMem',
+    '--defaultMemory', '8G',
+    '--maxCores', '16',
+    '--maxDisk', '128G',
+    '--maxMemory', '256G',
+    '--not-strict'
 ]
+# use LSF on the HPC to submit jobs
+if USE_LSF:
+    TOIL_ARGS = [
+        *TOIL_ARGS,
+        '--batchSystem', 'lsf',
+        '--disableCaching', 'True',
+        '--maxLocalJobs', '50', # number of parallel jobs to run; not actually "local", this includes HPC jobs
+        '--coalesceStatusCalls',
+        '--disableProgress'
+         ]
 
 # location on the filesystem for static fixtures
 FIXTURES_DIR = os.environ.get('FIXTURES_DIR', '/juno/work/ci/helix_filters_01/fixtures')

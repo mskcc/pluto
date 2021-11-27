@@ -11,9 +11,11 @@ import shutil
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
     from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from .settings import CWL_ENGINE
 
 if __name__ == "__main__":
     from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from settings import CWL_ENGINE
 
 class TestMd5(unittest.TestCase):
     def test_md5_file(self):
@@ -341,9 +343,14 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
+        if CWL_ENGINE == 'toil':
+            expected_output['output_file']['nameext'] = '.maf'
+            expected_output['output_file']['nameroot'] = 'output'
+            expected_output['output_file'].pop('path')
+        expected_path = os.path.join(output_dir, 'output.maf')
         self.assertDictEqual(output_json, expected_output)
 
-        comments, mutations = self.load_mutations(output_json['output_file']['path'])
+        comments, mutations = self.load_mutations(expected_path)
 
         expected_comments = ['# comment 1', '# comment 2']
         self.assertEqual(comments, expected_comments)
@@ -402,9 +409,14 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
+        if CWL_ENGINE == 'toil':
+            expected_output['output_file']['nameext'] = '.maf'
+            expected_output['output_file']['nameroot'] = 'output'
+            expected_output['output_file'].pop('path')
+        expected_path = os.path.join(output_dir, 'output.maf')
         self.assertDictEqual(output_json, expected_output)
 
-        comments, mutations = self.load_mutations(output_json['output_file']['path'])
+        comments, mutations = self.load_mutations(expected_path)
 
         expected_comments = ['# comment 1', '# comment 2']
         self.assertEqual(comments, expected_comments)

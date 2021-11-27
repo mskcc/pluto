@@ -7,9 +7,9 @@ import subprocess as sp
 import csv
 import json
 try:
-    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
 except ImportError:
-    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE
+    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
 from collections import OrderedDict
 import unittest
 from tempfile import mkdtemp
@@ -27,7 +27,7 @@ class CWLRunner(object):
     def __init__(self,
         cwl_file, # str or CWLFile
         input, # pipeline input dict to be converted to JSON
-        CWL_ARGS = CWL_ARGS,
+        # CWL_ARGS = CWL_ARGS,
         print_stdout = False,
         dir = None, # directory to run the CWL in and write output to
         output_dir = None, # directory to save output files to
@@ -101,7 +101,7 @@ class CWLRunner(object):
         """
         self.cwl_file = cwl_file
         self.input = input
-        self.CWL_ARGS = CWL_ARGS
+        # self.CWL_ARGS = CWL_ARGS
         self.print_stdout = print_stdout
         self.verbose = verbose
         self.input_json_file = input_json_file
@@ -119,6 +119,10 @@ class CWLRunner(object):
         self.js_console = js_console
         self.print_stderr = print_stderr
         self.use_cache = use_cache
+
+        # override some settings from env vars
+        if PRINT_COMMAND:
+            self.print_command = PRINT_COMMAND
 
         if dir is None:
             if engine == 'cwltool':
@@ -145,7 +149,7 @@ class CWLRunner(object):
                 tmpdir = self.dir,
                 input_json = self.input,
                 cwl_file = self.cwl_file,
-                CWL_ARGS = self.CWL_ARGS,
+                # CWL_ARGS = self.CWL_ARGS,
                 print_stdout = self.print_stdout,
                 print_command = self.print_command,
                 check_returncode = False,
@@ -263,7 +267,8 @@ def run_cwl(
     tmpdir, # dir where execution is taking place and files are staged & written
     input_json, # CWL input data
     cwl_file, # CWL file to run
-    CWL_ARGS = CWL_ARGS, # default cwltool args to use
+    # CWL_ARGS = CWL_ARGS, # default cwltool args to use
+    CLI_ARGS = None,
     print_stdout = False,
     print_command = False,
     check_returncode = True,
@@ -288,6 +293,9 @@ def run_cwl(
     str:
         path to the `output` directory from the CWL workflow
     """
+    if CLI_ARGS is None:
+        CLI_ARGS = CWL_ARGS
+
     if not input_is_file:
         # the input_json is a Python dict that needs to be dumped to file
         if not input_json_file:
@@ -304,24 +312,24 @@ def run_cwl(
     tmp_dir = os.path.join(tmpdir, 'tmp', "tmp")
 
     if leave_outputs:
-        CWL_ARGS = [ *CWL_ARGS, '--leave-outputs' ]
+        CLI_ARGS = [ *CLI_ARGS, '--leave-outputs' ]
     if leave_tmpdir:
-        CWL_ARGS = [ *CWL_ARGS, '--leave-tmpdir' ]
+        CLI_ARGS = [ *CLI_ARGS, '--leave-tmpdir' ]
     if debug:
-        CWL_ARGS = [ *CWL_ARGS, '--debug' ]
+        CLI_ARGS = [ *CLI_ARGS, '--debug' ]
     if parallel:
         print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached!")
         # if the containers are not already all pre-pulled then it can cause issues with parallel jobs all trying to pull the same container to the same filepath
-        CWL_ARGS = [ *CWL_ARGS, '--parallel' ]
+        CLI_ARGS = [ *CLI_ARGS, '--parallel' ]
     if js_console:
-        CWL_ARGS = [ *CWL_ARGS, '--js-console' ]
+        CLI_ARGS = [ *CLI_ARGS, '--js-console' ]
 
     if use_cache:
-        CWL_ARGS = [ *CWL_ARGS, '--cachedir', cache_dir ]
+        CLI_ARGS = [ *CLI_ARGS, '--cachedir', cache_dir ]
 
     command = [
         "cwl-runner",
-        *CWL_ARGS,
+        *CLI_ARGS,
         "--outdir", output_dir,
         "--tmpdir-prefix", tmp_dir,
         # "--cachedir", cache_dir,
@@ -361,7 +369,7 @@ def run_cwl_toil(
         input_json_file = None,
         print_command = False,
         restart = False,
-        TOIL_ARGS = TOIL_ARGS,
+        CLI_ARGS = None,
         input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
         ):
     """
@@ -369,6 +377,8 @@ def run_cwl_toil(
     """
     run_dir = os.path.abspath(run_dir)
 
+    if CLI_ARGS is None:
+        CLI_ARGS = TOIL_ARGS
 
     # if we are not restarting, jobStore should not already exist
     if not restart:
@@ -377,7 +387,7 @@ def run_cwl_toil(
         if os.path.exists(jobStore):
             print(">>> ERROR: Job store already exists; ", jobStore)
             sys.exit(1)
-        TOIL_ARGS = [ *TOIL_ARGS, '--jobStore', jobStore ]
+        CLI_ARGS = [ *CLI_ARGS, '--jobStore', jobStore ]
 
     # if we are restarting, jobStore needs to exist
     else:
@@ -390,7 +400,7 @@ def run_cwl_toil(
             print(">>> ERROR: jobStore does not exist; ", jobStore)
             sys.exit(1)
         # need to add extra restart args
-        TOIL_ARGS = [ *TOIL_ARGS, '--restart', '--jobStore', jobStore ]
+        CLI_ARGS = [ *CLI_ARGS, '--restart', '--jobStore', jobStore ]
 
     if not input_is_file:
         # the input_data is a Python dict to be dumped to JSON file
@@ -421,7 +431,7 @@ def run_cwl_toil(
 
     command = [
         "toil-cwl-runner",
-        *TOIL_ARGS,
+        *CLI_ARGS,
         "--logFile", logFile,
         "--outdir", output_dir,
         '--workDir', workDir,
@@ -836,10 +846,25 @@ class PlutoTestCase(unittest.TestCase):
         Note
         ----
         This method will set up `self.preserve`, `self.tmpdir`, and `self.input`
+
+        If USE_LSF is set, then we need to create the tmpdir in the pwd where its assumed to be accessible from the cluster
         """
-        self.preserve = False # save the tmpdir
-        self.tmpdir = mkdtemp() # dir = THIS_DIR
-        self.input = {} # put the CWL input data here
+        # put the CWL input data here; this will get dumped to a JSON file before executing tests
+        self.input = {}
+
+        # if we are using LSF then the tmpdir needs to be created in a location accessible by the whole cluster
+        if USE_LSF:
+            Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
+            self.tmpdir = mkdtemp(dir = TMP_DIR)
+        else:
+            self.tmpdir = mkdtemp()
+
+        # prevent deletion of tmpdir after tests complete
+        self.preserve = False
+        if PRESERVE_TEST_DIR:
+            self.preserve = True
+            # if we are preserving the tmpdir we pretty much always want to know the path to it as well
+            print(self.tmpdir)
 
     def tearDown(self):
         """
@@ -853,7 +878,7 @@ class PlutoTestCase(unittest.TestCase):
             # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
 
-    def run_cwl(self, input = None, cwl_file = None):
+    def run_cwl(self, input = None, cwl_file = None, engine = "cwltool"):
         """
         Run the CWL specified for the test case
 
@@ -864,16 +889,23 @@ class PlutoTestCase(unittest.TestCase):
         cwl_file: str | CWLFile
             the CWLFile object or path to CWL file to run
         """
+        # set default values
         if input is None:
             input = self.input
         if cwl_file is None:
             cwl_file = CWLFile(self.cwl_file)
+
+        # override with value passed from env var
+        if CWL_ENGINE:
+            engine = CWL_ENGINE
+
         runner = CWLRunner(
             cwl_file = cwl_file,
             input = input,
             verbose = False,
             dir = self.tmpdir,
             testcase = self,
+            engine = engine,
             **self.runner_args)
             # debug = self.debug,
             # leave_tmpdir = self.leave_tmpdir,
