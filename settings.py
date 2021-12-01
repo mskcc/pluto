@@ -51,6 +51,7 @@ CWL_ARGS = [
 TOIL_ARGS = [
     '--singularity', # run with Singularity instead of Docker
     '--disable-user-provenance', '--disable-host-provenance',
+    '--disableCaching', 'True',
     # need to propagate the env vars for Singularity, etc., into the HPC jobs
     '--preserve-environment', 'PATH', 'TMPDIR', 'TOIL_LSF_ARGS', 'SINGULARITY_PULLDIR', 'SINGULARITY_CACHEDIR',
     'SINGULARITYENV_LC_ALL', 'PWD',  'SINGULARITY_DOCKER_USERNAME', 'SINGULARITY_DOCKER_PASSWORD',
@@ -70,7 +71,6 @@ if USE_LSF:
     TOIL_ARGS = [
         *TOIL_ARGS,
         '--batchSystem', 'lsf',
-        '--disableCaching', 'True',
         '--maxLocalJobs', '50', # number of parallel jobs to run; not actually "local", this includes HPC jobs
         '--coalesceStatusCalls',
         '--disableProgress'
