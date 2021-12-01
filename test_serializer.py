@@ -10,10 +10,8 @@ from serializer import OFile, ODir
 
 if __name__ != "__main__":
     from .tools import PlutoTestCase, CWLFile
-    from .settings import CWL_ENGINE
 if __name__ == "__main__":
     from tools import PlutoTestCase, CWLFile
-    from settings import CWL_ENGINE
 
 class TestSerializer(PlutoTestCase):
     def test_cwl_file1(self):
@@ -29,12 +27,7 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/Sample4_purity.seg',
             'size': 488
         }
-        if CWL_ENGINE == 'toil':
-            expected['nameext'] = '.seg'
-            expected['nameroot'] = 'Sample4_purity'
-            expected.pop('path')
-        self.assertDictEqual(obj, expected)
-        self.assertEqual(obj, expected)
+        self.assertCWLDictEqual(obj, expected)
 
     def test_cwl_file2(self):
         """
@@ -49,12 +42,7 @@ class TestSerializer(PlutoTestCase):
             'path': 'Sample4_purity.seg',
             'size': 488
         }
-        if CWL_ENGINE == 'toil':
-            expected['nameext'] = '.seg'
-            expected['nameroot'] = 'Sample4_purity'
-            expected.pop('path')
-        self.assertDictEqual(obj, expected)
-        self.assertEqual(obj, expected)
+        self.assertCWLDictEqual(obj, expected)
 
     def test_cwl_dir1(self):
         """
@@ -68,13 +56,7 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/portal',
             'listing': []
         }
-        if CWL_ENGINE == 'toil':
-            expected['nameext'] = ''
-            expected['nameroot'] = 'portal'
-            expected.pop('path')
-        self.assertDictEqual(obj, expected)
-        self.assertEqual(obj, expected)
-
+        self.assertCWLDictEqual(obj, expected)
 
     def test_cwl_dir2(self):
         """
@@ -99,14 +81,8 @@ class TestSerializer(PlutoTestCase):
                 }
             ]
         }
-        if CWL_ENGINE == 'toil':
-            expected['nameext'] = ''
-            expected['nameroot'] = 'portal'
-            expected.pop('path')
-            expected['listing'][0].pop('path')
         self.maxDiff = None
-        self.assertDictEqual(_dir, expected)
-        self.assertEqual(_dir, expected)
+        self.assertCWLDictEqual(_dir, expected)
 
     def test_cwl_dir3(self):
         """
@@ -130,14 +106,52 @@ class TestSerializer(PlutoTestCase):
                 }
             ]
         }
-        if CWL_ENGINE == 'toil':
-            expected['nameext'] = ''
-            expected['nameroot'] = 'portal'
-            expected.pop('path')
-            expected['listing'][0].pop('path')
+
         self.maxDiff = None
-        self.assertDictEqual(_dir, expected)
-        self.assertEqual(_dir, expected)
+        self.assertCWLDictEqual(_dir, expected)
+
+    def test_assertCWLDictEqual(self):
+        """
+        Test that the test_assertCWLDictEqual method works with serialized objects
+        """
+        # test single File output
+        obj = OFile(size = 488, name = 'Sample4_purity.seg', dir = '/tmp/foo', hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c')
+        expected = {
+            'basename': 'Sample4_purity.seg',
+            'checksum': 'sha1$e6df130c57ca594578f9658e589cfafc8f40a56c',
+            'class': 'File',
+            'location': 'file:///tmp/foo/Sample4_purity.seg',
+            'path': '/tmp/foo/Sample4_purity.seg',
+            'size': 488,
+            'nameext' : '.seg',
+            'nameroot' : 'Sample4_purity'
+        }
+        self.assertCWLDictEqual(obj, expected)
+
+        # test nested Dir with File output
+        _file = OFile(size = 488, name = 'Sample4_purity.seg', hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c')
+        _dir = ODir(name = 'portal', dir = self.tmpdir, items = [_file])
+        expected = {
+            'basename': 'portal',
+            'class': 'Directory',
+            'location': 'file://'+ os.path.join(self.tmpdir, 'portal'),
+            'path': os.path.join(self.tmpdir, 'portal'),
+            'nameext' : '',
+            'nameroot' : 'portal',
+            'listing': [
+                {
+                'basename': 'Sample4_purity.seg',
+                'checksum': 'sha1$e6df130c57ca594578f9658e589cfafc8f40a56c',
+                'class': 'File',
+                'location': 'file://' + os.path.join(self.tmpdir, 'portal/Sample4_purity.seg'),
+                'path': os.path.join(self.tmpdir, 'portal/Sample4_purity.seg'),
+                'size': 488,
+                'nameext' : '.seg',
+                'nameroot' : 'Sample4_purity'
+                }
+            ]
+        }
+        self.assertCWLDictEqual(_dir, expected)
 
 
 
@@ -172,7 +186,7 @@ class TestSerializeCWLOutput(PlutoTestCase):
         expected_output = {
             'output_file': OFile(size = 12, name = 'output.maf', dir = output_dir, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e')
             }
-        self.assertDictEqual(output_json, expected_output)
+        self.assertCWLDictEqual(output_json, expected_output)
 
 
 class TestSerializeCWLDirOutput(PlutoTestCase):
@@ -204,7 +218,7 @@ class TestSerializeCWLDirOutput(PlutoTestCase):
             ])
             }
         self.maxDiff = None
-        self.assertDictEqual(output_json, expected_output)
+        self.assertCWLDictEqual(output_json, expected_output)
 
 
 class TestSerializeCWLSubDirOutput(PlutoTestCase):
@@ -235,8 +249,7 @@ class TestSerializeCWLSubDirOutput(PlutoTestCase):
             ])
             }
         self.maxDiff = None
-        self.assertDictEqual(output_json, expected_output)
-        self.assertEqual(output_json, expected_output)
+        self.assertCWLDictEqual(output_json, expected_output)
 
 if __name__ == "__main__":
     unittest.main()

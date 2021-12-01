@@ -17,6 +17,7 @@ import shutil
 from pathlib import Path
 import getpass
 import hashlib
+from copy import deepcopy
 
 username = getpass.getuser()
 
@@ -212,6 +213,13 @@ class CWLFile(os.PathLike):
         return(self.path)
     def __fspath__(self):
         return(self.path)
+
+
+
+
+
+
+
 
 
 
@@ -663,6 +671,37 @@ def md5_obj(obj):
     return(hash)
 
 
+def clean_dicts(obj, bad_keys = ('nameext', 'nameroot')):
+    """
+    Recursively remove all bad_keys from all dicts in the input obj
+    """
+    # remove bad keys from top-level dict keys
+    if isinstance(obj, dict):
+        for bad_key in bad_keys:
+            if bad_key in obj:
+                obj.pop(bad_key, None)
+        # recurse to clear out bad keys from nested list values
+        for key, value in obj.items():
+            if isinstance(obj[key], list):
+                for i in obj[key]:
+                    clean_dicts(obj = i, bad_keys = bad_keys)
+            elif isinstance(obj[key], dict):
+                clean_dicts(obj = obj[key], bad_keys = bad_keys)
+    # recurse to clear out bad keys from nested list values
+    elif isinstance(obj, list):
+        for item in obj:
+            clean_dicts(obj = item, bad_keys = bad_keys)
+
+
+
+
+
+
+
+
+
+
+
 class TableReader(object):
     """
     Handler for reading a table with comments
@@ -758,9 +797,6 @@ class MafWriter(csv.DictWriter):
             if write_comments:
                 for line in comments:
                     f.write(line) # + lineterminator ; comments should have newline appended already
-
-
-
 
 
 
@@ -959,3 +995,36 @@ class PlutoTestCase(unittest.TestCase):
         """
         lines = dicts2lines(*args, **kwargs)
         return(lines)
+
+    def assertCWLDictEqual(
+        self,
+        d1: dict,
+        d2: dict,
+        bad_keys = ('nameext', 'nameroot'), # These keys show up inconsistently in Toil CWL output so just strip them out any time we see them
+        _print: bool = False,
+        _printJSON: bool = False,
+        *args, **kwargs):
+        """
+        wrapper around `unittest.TestCase.assertDictEqual` that can remove the keys for
+        `nameext` and `nameroot`
+        from dicts representing CWL cwltool / Toil JSON output
+        before testing them for equality
+        """
+        # if we are running with Toil then we need to remove the 'path' key
+        # because thats just what Toil does idk why
+        if CWL_ENGINE == "toil":
+            bad_keys = [ *bad_keys, 'path' ]
+
+        # copy the input dicts just to be safe
+        # NOTE: this could backfire potentially, idk, watch out for big nested objects I guess
+        d1_copy = deepcopy(d1)
+        d2_copy = deepcopy(d2)
+        clean_dicts(d1_copy, bad_keys = bad_keys)
+        clean_dicts(d2_copy, bad_keys = bad_keys)
+        if _print:
+            print(d1_copy)
+            print(d2_copy)
+        if _printJSON:
+            print(json.dumps(d1_copy, indent = 4))
+            print(json.dumps(d2_copy, indent = 4))
+        self.assertDictEqual(d1_copy, d2_copy, *args, **kwargs)

@@ -53,16 +53,12 @@ And still use this;
 import os
 from copy import deepcopy
 from typing import List
-try:
-    from settings import CWL_ENGINE
-except ModuleNotFoundError:
-    from .settings import CWL_ENGINE
 
 class OFile(dict):
     """
     Output File object
 
-    NOTE: IMPORTANT: when OFile is inside a subdir, initialize with dir = None (the default value) !!
+    IMPORTANT: when OFile is inside a subdir, initialize with dir = None (the default value) !!
 
     Example JSON representation;
 
@@ -88,6 +84,7 @@ class OFile(dict):
         self['basename'] = name
         self['class'] = class_label
         # set path and location as object attributes because we need special handling for their dict keys later
+        # NOTE: I removed ^^^ that logic btw
         if dir:
             self.path = os.path.join(dir, self['basename'])
         else:
@@ -99,15 +96,8 @@ class OFile(dict):
         if hash:
             self['checksum'] = 'sha1$' + hash
 
-        # add different keys if we're using Toil or not
-        if CWL_ENGINE == 'toil':
-            filename, file_extension = os.path.splitext(self['basename'])
-            self['nameext'] = file_extension
-            self['nameroot'] = filename
-            self['location'] = self.location
-        else:
-            self['location'] = self.location
-            self['path'] = self.path
+        self['location'] = self.location
+        self['path'] = self.path
 
 class ODir(dict):
     """
@@ -169,19 +159,14 @@ class ODir(dict):
             self.path = self['basename'] # TODO: should this be prefixed with '/' or pwd? dont think it will actually come up in real life use cases
         self.location = location_base + self.path
 
-        if CWL_ENGINE == 'toil':
-            filename, file_extension = os.path.splitext(self['basename'])
-            self['nameext'] = file_extension
-            self['nameroot'] = filename
-            self['location'] = self.location
-        else:
-            self['location'] = self.location
-            self['path'] = self.path
+
+        self['location'] = self.location
+        self['path'] = self.path
 
         # update the path and location entries for all contents
         self['listing'] =[ i for i in self.update_listings(base_path = self.path, items = items) ]
 
-    def update_listings(self, base_path: str, items: List[OFile], location_base: str = 'file://'):
+    def update_listings(self, base_path: str, items: List[OFile], location_base: str = 'file://') -> OFile:
         """
         Recursively adds entries with correct 'path' and 'location' fields to the
         current instance's 'listing'
@@ -197,12 +182,5 @@ class ODir(dict):
                 i['location'] = i.location
             if 'listing' in i:
                 i['listing'] = [ q for q in self.update_listings(base_path = base_path, items = i['listing'], location_base = location_base) ]
-
-            # for some reason Toil does not return these attributes in listing contents;
-            if CWL_ENGINE == 'toil':
-                if 'nameext' in i.keys():
-                    i.pop('nameext')
-                if 'nameroot' in i.keys():
-                    i.pop('nameroot')
 
             yield(i)

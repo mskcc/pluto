@@ -10,11 +10,11 @@ import shutil
 
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
-    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter, clean_dicts
     from .settings import CWL_ENGINE
 
 if __name__ == "__main__":
-    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter, clean_dicts
     from settings import CWL_ENGINE
 
 class TestMd5(unittest.TestCase):
@@ -423,6 +423,84 @@ class TestCopyCWL(PlutoTestCase):
 
         expected_mutations = [ maf_row1, maf_row2 ]
         self.assertEqual(mutations, expected_mutations)
+
+class TestCleanDicts(PlutoTestCase):
+    def test_clean_keys_from_dict(self):
+        """
+        Test case for scrubbing certain keys from a single dict
+        """
+        # simple case of dict with no nesting
+        d = {'a':1}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameext': "foo"}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameext': "foo", 'nameroot':'bar'}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameroot':'bar'}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # dict that has nested dict of dict values
+        d = {'a':1, 'b':{'c':1}}
+        expected = {'a':1, 'b':{'c':1}}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':{'c':1, 'nameext': "foo", 'nameroot':'bar'}}
+        expected = {'a':1, 'b':{'c':1}}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # dict that has nested list of dict values
+        d = {'a':1, 'b':[{'c':1}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':[{'c':1, 'nameext': "foo"}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':[{'c':1, 'nameroot': "foo"}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # list of dicts with nested values
+        l = [{'a':1, 'nameroot':'bar'}, {'a':1, 'nameext':'foo'}]
+        expected = [{'a':1}, {'a':1}]
+        clean_dicts(l)
+        self.assertEqual(l, expected)
+
+        l = [123, {'a':1, 'nameroot':'bar'}, {'a':1, 'c':[{'d':1, 'nameroot':'bar'}]}]
+        expected = [123, {'a':1}, {'a':1, 'c':[{'d':1}]}]
+        clean_dicts(l)
+        self.assertEqual(l, expected)
+
+class TestPlutoTestCase(PlutoTestCase):
+    def test_assertCWLDictEqual(self):
+        d1 = {'a':1, 'nameext': "foo", 'nameroot':'bar'}
+        d2 = {'a':1}
+        self.assertCWLDictEqual(d1, d2)
+
+        d1 = {'a':1, 'b':[{'c':1, 'nameext': "foo"}]}
+        d2 = {'a':1, 'b':[{'c':1}]}
+        self.assertCWLDictEqual(d1, d2)
+
+        d1 = {'a':1, 'nameroot':'bar', 'b':[{'c':1, 'nameext': "foo"}, {'d':2}]}
+        d2 = {'a':1, 'b':[{'c':1}, {'d':2}]}
+        self.assertCWLDictEqual(d1, d2)
 
 if __name__ == "__main__":
     unittest.main()
