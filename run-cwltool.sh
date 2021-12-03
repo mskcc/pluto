@@ -1,5 +1,8 @@
 #!/bin/bash
 # wrapper around running cwltool with some extra settings
+# example usage;
+# $ . env.juno.sh toil
+# $ ./run-cwltool.sh cwl/some_workflow.cwl input.json
 set -eu
 TIMESTAMP="$(date +%s)"
 RUN_DIR="${PWD}/cwltool_runs/${TIMESTAMP}"
