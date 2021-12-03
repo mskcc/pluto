@@ -671,26 +671,72 @@ def md5_obj(obj):
     return(hash)
 
 
-def clean_dicts(obj, bad_keys = ('nameext', 'nameroot')):
+def clean_dicts(obj, bad_keys = ('nameext', 'nameroot'), related_keys = None):
     """
     Recursively remove all bad_keys from all dicts in the input obj
+    Also, use "related_keys" to conditionally remove certain keys if a specific key:value pair is present
+    If `obj` is a list, all items are recursively searched for dicts containuing keys for scrubbing
+    If `obj` is a dict, keys are scrubbed
+    If any `obj` values are lists or dicts, they are recursively scrubbed as well
+
+    NOTE: this depends on `obj` being mutable and maintaining state between recursion calls...
+
+    TODO: implement a version that can match `related_keys` on file extension like .html, .gz, etc..
+
+        # remove some dict keys
+        d = {'a':1, 'nameext': "foo"}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # remove some dict keys if a given key matches a given value
+        # related_keys = [("key_foo", "value_foo", ["badkey1", "badkey2"]),
+        #                 ("key_bar", "value_bar", ["badkey1", "badkey2"]), ... ]
+        d = {'basename': "report.html", "class": "File", 'size': "1", "checksum": "foobar"}
+        related_keys = [('basename', "report.html", ['size', 'checksum'])]
+        expected = {'basename': "report.html", "class": "File"}
+        clean_dicts(d, related_keys = related_keys)
+        self.assertDictEqual(d, expected)
+
     """
+    if related_keys is None:
+        related_keys = []
+
     # remove bad keys from top-level dict keys
     if isinstance(obj, dict):
+        # ~~~~~~~~~ #
+        # NOTE: This is the terminal case for the recursion loop !!
+        # remove each key in the dict that is recognized as being unwanted
         for bad_key in bad_keys:
-            if bad_key in obj:
-                obj.pop(bad_key, None)
+            obj.pop(bad_key, None)
+
+        # remove each unwanted key in the dict if some other key:value pair is found
+        for key_map in related_keys:
+            key = key_map[0] # key_map = ("key_foo", "value_foo", ["key1", "key2"])
+            value = key_map[1]
+            remove_keys = key_map[2] # probably need some kind of type-enforcement here
+            if (key, value) in obj.items():
+                for remove_key in remove_keys:
+                    obj.pop(remove_key, None)
+        # ~~~~~~~~~ #
+
         # recurse to clear out bad keys from nested list values
-        for key, value in obj.items():
+        # obj = { 'foo': [i, j, k, ...],
+        #         'bar': {'baz': [q, r, s, ...]} }
+        for key in obj.keys():
+            # 'foo': [i, j, k, ...]
             if isinstance(obj[key], list):
                 for i in obj[key]:
-                    clean_dicts(obj = i, bad_keys = bad_keys)
+                    clean_dicts(obj = i, bad_keys = bad_keys, related_keys = related_keys)
+
+            # 'bar': {'baz': [q, r, s, ...]}
             elif isinstance(obj[key], dict):
-                clean_dicts(obj = obj[key], bad_keys = bad_keys)
+                clean_dicts(obj = obj[key], bad_keys = bad_keys, related_keys = related_keys)
+
     # recurse to clear out bad keys from nested list values
     elif isinstance(obj, list):
         for item in obj:
-            clean_dicts(obj = item, bad_keys = bad_keys)
+            clean_dicts(obj = item, bad_keys = bad_keys, related_keys = related_keys)
 
 
 
@@ -875,6 +921,16 @@ class PlutoTestCase(unittest.TestCase):
         print_command = False
         )
 
+    # these are the mappings of key:value pairs that should have the related keys removed
+    # override this default setting when initializing the class instance, or just pass in
+    # custom setting directly to the assertCWLDictEqual method
+    related_keys = [
+        # ("key", "value", ["badkey1", "badkey2", ...]),
+        # removes 'size' and 'checksum' keys from the dict when 'basename' is 'report.html'
+        ('basename', "report.html", ['size', 'checksum']),
+        ('basename', "igv_report.html", ['size', 'checksum'])
+        ]
+
     def setUp(self):
         """
         This gets automatically run before each test case
@@ -1001,6 +1057,7 @@ class PlutoTestCase(unittest.TestCase):
         d1: dict,
         d2: dict,
         bad_keys = ('nameext', 'nameroot'), # These keys show up inconsistently in Toil CWL output so just strip them out any time we see them
+        related_keys = None, # mapping of key:value pairs that should trigger removal of other keys
         _print: bool = False,
         _printJSON: bool = False,
         *args, **kwargs):
@@ -1010,6 +1067,9 @@ class PlutoTestCase(unittest.TestCase):
         from dicts representing CWL cwltool / Toil JSON output
         before testing them for equality
         """
+        if related_keys is None:
+            related_keys = self.related_keys
+
         # if we are running with Toil then we need to remove the 'path' key
         # because thats just what Toil does idk why
         if CWL_ENGINE == "toil":
@@ -1019,8 +1079,8 @@ class PlutoTestCase(unittest.TestCase):
         # NOTE: this could backfire potentially, idk, watch out for big nested objects I guess
         d1_copy = deepcopy(d1)
         d2_copy = deepcopy(d2)
-        clean_dicts(d1_copy, bad_keys = bad_keys)
-        clean_dicts(d2_copy, bad_keys = bad_keys)
+        clean_dicts(d1_copy, bad_keys = bad_keys, related_keys = related_keys)
+        clean_dicts(d2_copy, bad_keys = bad_keys, related_keys = related_keys)
         if _print:
             print(d1_copy)
             print(d2_copy)
