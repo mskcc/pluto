@@ -7,9 +7,11 @@ import subprocess as sp
 import csv
 import json
 try:
-    from .settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
-    from settings import CWL_DIR, CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
 from tempfile import mkdtemp
@@ -18,35 +20,68 @@ from pathlib import Path
 import getpass
 import hashlib
 from copy import deepcopy
+from typing import Union, List, Tuple, Dict, TextIO, Generator
 
 username = getpass.getuser()
+
+
+class CWLFile(os.PathLike):
+    """
+    Wrapper class to locate the full path to a cwl file more conveniently
+    """
+    def __init__(self, path: str, CWL_DIR: str = None):
+        """
+        Parameters
+        ----------
+        path: str
+            name of a CWL file relative to `CWL_DIR`
+        CWL_DIR: str
+            full path to the directory containing CWL files
+
+
+        Examples
+        --------
+        Example usage::
+
+            cwl_file = CWLFile("foo.cwl")
+        """
+        if CWL_DIR is None:
+            CWL_DIR = _CWL_DIR
+        self.path = os.path.join(CWL_DIR, path)
+    def __str__(self):
+        return(self.path)
+    def __repr__(self):
+        return(self.path)
+    def __fspath__(self):
+        return(self.path)
+
 
 class CWLRunner(object):
     """
     class for running a CWL File
     """
     def __init__(self,
-        cwl_file, # str or CWLFile
-        input, # pipeline input dict to be converted to JSON
+        cwl_file: Union[str, CWLFile], # str or CWLFile
+        input: dict, # pipeline input dict to be converted to JSON
         # CWL_ARGS = CWL_ARGS,
-        print_stdout = False,
-        dir = None, # directory to run the CWL in and write output to
-        output_dir = None, # directory to save output files to
-        input_json_file = None, # path to write input JSON to if you already have one chosen
-        input_is_file = False, # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
-        verbose = True,
-        testcase = None,
-        engine = "cwltool", # default engine is cwl-runner cwltool
-        print_command = False,
-        restart = False,
-        jobStore = None,
-        debug = False,
-        leave_tmpdir = False,
-        leave_outputs = False,
-        parallel = False,
-        js_console = False,
-        print_stderr = False,
-        use_cache = True
+        print_stdout: bool = False,
+        dir: str = None, # directory to run the CWL in and write output to
+        output_dir: str = None, # directory to save output files to
+        input_json_file: str = None, # path to write input JSON to if you already have one chosen
+        input_is_file: bool = False, # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
+        verbose: bool = True,
+        testcase: unittest.TestCase = None,
+        engine: str = "cwltool", # default engine is cwl-runner cwltool
+        print_command: bool = False,
+        restart: bool = False,
+        jobStore: str = None,
+        debug: bool = False,
+        leave_tmpdir: bool = False,
+        leave_outputs: bool = False,
+        parallel: bool = False,
+        js_console: bool = False,
+        print_stderr: bool = False,
+        use_cache: bool = True
         ):
         """
         Parameters
@@ -136,7 +171,7 @@ class CWLRunner(object):
         Path(os.path.abspath(dir)).mkdir(parents=True, exist_ok=True)
         self.dir = os.path.abspath(dir)
 
-    def run(self):
+    def run(self) -> Tuple[int, str, str]:
         """
         Run the CWL workflow object
         """
@@ -178,6 +213,9 @@ class CWLRunner(object):
                 testcase = self.testcase
                 )
         else:
+            # TODO: what should we do in the case where the engine doesnt match one of the above??
+            # This should probably raise an error
+            raise
             return()
         output_json_file = os.path.join(self.dir, "output.json")
         with open(output_json_file, "w") as fout:
@@ -187,33 +225,6 @@ class CWLRunner(object):
 
 
 
-class CWLFile(os.PathLike):
-    """
-    Wrapper class to locate the full path to a cwl file more conveniently
-    """
-    def __init__(self, path, CWL_DIR = CWL_DIR):
-        """
-        Parameters
-        ----------
-        path: str
-            name of a CWL file relative to `CWL_DIR`
-        CWL_DIR: str
-            full path to the directory containing CWL files
-
-
-        Examples
-        --------
-        Example usage::
-
-            cwl_file = CWLFile("foo.cwl")
-        """
-        self.path = os.path.join(CWL_DIR, path)
-    def __str__(self):
-        return(self.path)
-    def __repr__(self):
-        return(self.path)
-    def __fspath__(self):
-        return(self.path)
 
 
 
@@ -225,8 +236,11 @@ class CWLFile(os.PathLike):
 
 
 
-
-def run_command(args, testcase = None, validate = False, print_stdout = False):
+def run_command(
+    args: List[str],
+    testcase: unittest.TestCase = None,
+    validate: bool = False,
+    print_stdout: bool = False) -> Tuple[int, str, str]:
     """
     Helper function to run a shell command easier
 
@@ -272,26 +286,26 @@ def run_command(args, testcase = None, validate = False, print_stdout = False):
     return(returncode, proc_stdout, proc_stderr)
 
 def run_cwl(
-    testcase, # 'self' in the unittest.TestCase instance
-    tmpdir, # dir where execution is taking place and files are staged & written
-    input_json, # CWL input data
-    cwl_file, # CWL file to run
+    tmpdir: str, # dir where execution is taking place and files are staged & written
+    input_json: dict, # CWL input data
+    cwl_file: Union[str, CWLFile], # CWL file to run
     # CWL_ARGS = CWL_ARGS, # default cwltool args to use
-    CLI_ARGS = None,
-    print_stdout = False,
-    print_command = False,
-    check_returncode = True,
-    input_json_file = None,
-    debug = False,
-    leave_tmpdir = False,
-    leave_outputs = False,
-    parallel = False,
-    output_dir = None,
-    input_is_file = False, # if the `input_json` is actually a path to a pre-existing JSON file
-    js_console = False,
-    print_stderr = False,
-    use_cache = True
-    ):
+    testcase: unittest.TestCase = None, # 'self' in the unittest.TestCase instance
+    CLI_ARGS: List[str] = None,
+    print_stdout: bool = False,
+    print_command: bool = False,
+    check_returncode: bool = True,
+    input_json_file: str = None,
+    debug: bool = False,
+    leave_tmpdir: bool = False,
+    leave_outputs: bool = False,
+    parallel: bool = False,
+    output_dir: str = None,
+    input_is_file: bool = False, # if the `input_json` is actually a path to a pre-existing JSON file
+    js_console: bool = False,
+    print_stderr: bool = False,
+    use_cache: bool = True
+    ) -> Tuple[Dict, str]:
     """
     Run the CWL with cwltool / cwl-runner
 
@@ -367,24 +381,24 @@ def run_cwl(
     return(output_json, output_dir)
 
 def run_cwl_toil(
-        input_data,
-        cwl_file,
-        run_dir,
-        testcase, # 'self' in the unittest.TestCase instance
-        output_dir = None,
-        workDir = None,
-        jobStore = None,
-        tmpDir = None,
-        logFile = None,
-        input_json_file = None,
-        print_command = False,
-        restart = False,
-        CLI_ARGS = None,
-        input_is_file = False, # if the `input_json` is actually a path to a pre-existing JSON file
-        print_stdout = False,
-        print_stderr = False,
-        check_returncode = True # requires testcase instance to be passed as well
-        ):
+        input_data: Dict,
+        cwl_file: Union[str, CWLFile],
+        run_dir: str,
+        testcase: unittest.TestCase = None, # 'self' in the unittest.TestCase instance
+        output_dir: str = None,
+        workDir: str = None,
+        jobStore: str = None,
+        tmpDir: str = None,
+        logFile: str = None,
+        input_json_file: str = None,
+        print_command: bool = False,
+        restart: bool = False,
+        CLI_ARGS: List[str] = None,
+        input_is_file: bool = False, # if the `input_json` is actually a path to a pre-existing JSON file
+        print_stdout: bool = False,
+        print_stderr: bool = False,
+        check_returncode: bool = True # requires testcase instance to be passed as well
+        ) -> Tuple[Dict, str]:
     """
     Run a CWL using Toil
     """
@@ -482,7 +496,10 @@ def run_cwl_toil(
         raise
 
 
-def parse_header_comments(filename, comment_char = '#', ignore_comments = False):
+def parse_header_comments(
+    filename: str,
+    comment_char: str = '#',
+    ignore_comments: bool = False) -> Tuple[ List[str], int ]:
     """
     Parse a file with comments in its header to return the comments and the line number to start reader from.
 
@@ -526,7 +543,7 @@ def parse_header_comments(filename, comment_char = '#', ignore_comments = False)
                 break
     return(comments, start_line)
 
-def load_mutations(filename):
+def load_mutations(filename: str) -> Tuple[ List[str], List[Dict] ]:
     """
     Load the mutations from a tabular .maf file
 
@@ -570,7 +587,12 @@ def load_mutations(filename):
         mutations = [ row for row in reader ]
     return(comments, mutations)
 
-def write_table(tmpdir, filename, lines, delimiter = '\t', filepath = None):
+def write_table(
+    tmpdir: str,
+    filename: str,
+    lines: List[ List[str] ],
+    delimiter: str = '\t',
+    filepath: str = None) -> str:
     """
     Write a table to a temp location
 
@@ -600,7 +622,7 @@ def write_table(tmpdir, filename, lines, delimiter = '\t', filepath = None):
             f.write(line_str)
     return(filepath)
 
-def dicts2lines(dict_list, comment_list = None):
+def dicts2lines(dict_list: List[Dict], comment_list: List[ List[str] ] = None) -> List[ List[str] ]:
     """
     Helper function to convert a list of dicts into a list of lines to use with write_table
     create a list of line parts to pass for write_table
@@ -651,7 +673,7 @@ def dicts2lines(dict_list, comment_list = None):
         demo_maf_lines.append([ v for v in row.values() ])
     return(demo_maf_lines)
 
-def md5_file(filename):
+def md5_file(filename: str) -> str:
     """
     Get md5sum of a file by reading it in small chunks. This avoids issues with Python memory usage when hashing large files.
 
@@ -675,7 +697,7 @@ def md5_file(filename):
     return(hash)
 
 
-def md5_obj(obj):
+def md5_obj(obj: object) -> str:
     """
     Get the md5sum of a Python object in memory by converting it to JSON
 
@@ -688,7 +710,10 @@ def md5_obj(obj):
     return(hash)
 
 
-def clean_dicts(obj, bad_keys = ('nameext', 'nameroot'), related_keys = None):
+def clean_dicts(
+    obj: Union[Dict, List],
+    bad_keys: List[str] = ('nameext', 'nameroot'),
+    related_keys: List[ Tuple[str, str, List[str]] ] = None):
     """
     Recursively remove all bad_keys from all dicts in the input obj
     Also, use "related_keys" to conditionally remove certain keys if a specific key:value pair is present
@@ -775,7 +800,11 @@ class TableReader(object):
     ----
     Input file must have column headers!
     """
-    def __init__(self, filename, comment_char = '#', delimiter = '\t', ignore_comments = False):
+    def __init__(self,
+        filename: str,
+        comment_char: str = '#',
+        delimiter: str = '\t',
+        ignore_comments: bool = False):
         """
         Parameters
         ----------
@@ -805,7 +834,7 @@ class TableReader(object):
         if self.comments:
             self.comment_lines = [ c + '\n' for c in self.comments ]
 
-    def get_reader(self, fin):
+    def get_reader(self, fin: TextIO) -> csv.DictReader:
         """
         returns the csv.DictReader for the table rows, skipping the comments
         """
@@ -817,7 +846,7 @@ class TableReader(object):
         reader = csv.DictReader(fin, delimiter = self.delimiter)
         return(reader)
 
-    def get_fieldnames(self):
+    def get_fieldnames(self) -> List[str]:
         """
         returns the list of fieldnames for the table
         """
@@ -825,7 +854,7 @@ class TableReader(object):
             reader = self.get_reader(fin)
             return(reader.fieldnames)
 
-    def read(self):
+    def read(self) -> Generator[Dict, None, None]:
         """
         iterable to get the record rows from the table, skipping the comments
         """
@@ -834,7 +863,7 @@ class TableReader(object):
             for row in reader:
                 yield(row)
 
-    def count(self):
+    def count(self) -> int:
         """
         Return the total number of records in the table
         """
@@ -854,7 +883,15 @@ class MafWriter(csv.DictWriter):
 
     https://github.com/python/cpython/blob/12803c59d54ff1a45a5b08cef82652ef199b3b07/Lib/csv.py#L130
     """
-    def __init__(self, f, fieldnames, delimiter = '\t', lineterminator='\n', comments = None, write_comments = True, *args, **kwargs):
+    def __init__(
+        self,
+        f: TextIO,
+        fieldnames: List[str],
+        delimiter: str = '\t',
+        lineterminator: str ='\n',
+        comments: List[str] = None,
+        write_comments: bool = True,
+        *args, **kwargs):
         super().__init__(f, fieldnames = fieldnames, delimiter = delimiter, lineterminator=lineterminator, *args, **kwargs)
         if comments:
             if write_comments:
@@ -989,7 +1026,12 @@ class PlutoTestCase(unittest.TestCase):
             # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
 
-    def run_cwl(self, input = None, cwl_file = None, engine = "cwltool", *args, **kwargs):
+    def run_cwl(
+        self,
+        input: Dict = None,
+        cwl_file: Union[str, CWLFile] = None,
+        engine: str = "cwltool",
+        *args, **kwargs) -> Tuple[Dict, str]:
         """
         Run the CWL specified for the test case
 
@@ -1024,7 +1066,7 @@ class PlutoTestCase(unittest.TestCase):
         output_json, output_dir, output_json_file = runner.run()
         return(output_json, output_dir)
 
-    def run_command(self, *args, **kwargs):
+    def run_command(self, *args, **kwargs) -> Tuple[int, str, str]:
         """
         Run a shell command. Wrapper around :func:`~pluto.run_command`
         """
@@ -1032,14 +1074,14 @@ class PlutoTestCase(unittest.TestCase):
         return(returncode, proc_stdout, proc_stderr)
 
     # wrappers around other functions in this module to reduce imports needed
-    def write_table(self, *args, **kwargs):
+    def write_table(self, *args, **kwargs) -> str:
         """
         Wrapper around :func:`~pluto.write_table`
         """
         filepath = write_table(*args, **kwargs)
         return(filepath)
 
-    def read_table(self, input_file):
+    def read_table(self, input_file: str) -> List[ List[str] ]:
         """
         Simple loading of tabular lines in a file
 
@@ -1057,14 +1099,14 @@ class PlutoTestCase(unittest.TestCase):
             lines = [ l.strip().split() for l in fin ]
         return(lines)
 
-    def load_mutations(self, *args, **kwargs):
+    def load_mutations(self, *args, **kwargs) -> Tuple[ List[str], List[Dict] ]:
         """
         Wrapper around :func:`~pluto.load_mutations`
         """
         comments, mutations = load_mutations(*args, **kwargs)
         return(comments, mutations)
 
-    def dicts2lines(self, *args, **kwargs):
+    def dicts2lines(self, *args, **kwargs) -> List[ List[str] ]:
         """
         Wrapper around :func:`~pluto.dicts2lines`
         """
