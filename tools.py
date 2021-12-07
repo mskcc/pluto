@@ -174,7 +174,8 @@ class CWLRunner(object):
                 input_json_file = self.input_json_file,
                 restart = self.restart,
                 jobStore = self.jobStore,
-                input_is_file = self.input_is_file
+                input_is_file = self.input_is_file,
+                testcase = self.testcase
                 )
         else:
             return()
@@ -369,6 +370,7 @@ def run_cwl_toil(
         input_data,
         cwl_file,
         run_dir,
+        testcase, # 'self' in the unittest.TestCase instance
         output_dir = None,
         workDir = None,
         jobStore = None,
@@ -378,7 +380,10 @@ def run_cwl_toil(
         print_command = False,
         restart = False,
         CLI_ARGS = None,
-        input_is_file = False # if the `input_json` is actually a path to a pre-existing JSON file
+        input_is_file = False, # if the `input_json` is actually a path to a pre-existing JSON file
+        print_stdout = False,
+        print_stderr = False,
+        check_returncode = True # requires testcase instance to be passed as well
         ):
     """
     Run a CWL using Toil
@@ -452,7 +457,19 @@ def run_cwl_toil(
         print(">>> toil-cwl-runner command:")
         print(' '.join([ str(c) for c in  command ]) )
 
-    returncode, proc_stdout, proc_stderr = run_command(command)
+    returncode, proc_stdout, proc_stderr = run_command(args = command)
+
+    if print_stdout:
+        print(proc_stdout)
+
+    if print_stderr:
+        print(proc_stderr)
+
+    if returncode != 0:
+        print(proc_stderr)
+
+    if check_returncode:
+        testcase.assertEqual(returncode, 0)
 
     try:
         output_data = json.loads(proc_stdout)
@@ -909,9 +926,6 @@ class PlutoTestCase(unittest.TestCase):
     """
     # global settings for all test cases in the instance
     cwl_file = None # make sure to override this in subclasses before using the runner
-    DATA_SETS = DATA_SETS
-    KNOWN_FUSIONS_FILE = KNOWN_FUSIONS_FILE
-    IMPACT_FILE = IMPACT_FILE
     runner_args = dict(
         leave_outputs = False,
         leave_tmpdir = False,
@@ -920,6 +934,11 @@ class PlutoTestCase(unittest.TestCase):
         js_console = False,
         print_command = False
         )
+
+    # TODO: remove these from the object class! get them from fixtures.py instead
+    DATA_SETS = DATA_SETS
+    KNOWN_FUSIONS_FILE = KNOWN_FUSIONS_FILE
+    IMPACT_FILE = IMPACT_FILE
 
     # these are the mappings of key:value pairs that should have the related keys removed
     # override this default setting when initializing the class instance, or just pass in
@@ -970,7 +989,7 @@ class PlutoTestCase(unittest.TestCase):
             # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
 
-    def run_cwl(self, input = None, cwl_file = None, engine = "cwltool"):
+    def run_cwl(self, input = None, cwl_file = None, engine = "cwltool", *args, **kwargs):
         """
         Run the CWL specified for the test case
 
@@ -998,7 +1017,7 @@ class PlutoTestCase(unittest.TestCase):
             dir = self.tmpdir,
             testcase = self,
             engine = engine,
-            **self.runner_args)
+            *args, **self.runner_args, **kwargs)
             # debug = self.debug,
             # leave_tmpdir = self.leave_tmpdir,
             # leave_outputs = self.leave_outputs

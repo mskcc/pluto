@@ -11,6 +11,11 @@ ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
 if ENABLE_LARGE_TESTS:
     print(">>> Enabling execution of large test cases...")
 
+# use this flag for enabling the huge workflow test cases for Jenkins CI, etc
+ENABLE_INTEGRATION_TESTS = os.environ.get('INTEGRATION_TESTS') == "True"
+if ENABLE_INTEGRATION_TESTS:
+    print(">>> Enabling execution of large integration test cases...")
+
 # use LSF with Toil
 USE_LSF = os.environ.get('USE_LSF') == "True"
 
@@ -75,6 +80,12 @@ if USE_LSF:
         '--coalesceStatusCalls',
         '--disableProgress'
          ]
+
+
+
+
+# ~~~~~~~~~~ #
+# TODO: Move these settings back to pluto-cwl repo! Make sure they're not also used in helix_filters_01 repo though
 
 # location on the filesystem for static fixtures
 FIXTURES_DIR = os.environ.get('FIXTURES_DIR', '/juno/work/ci/helix_filters_01/fixtures')
