@@ -335,5 +335,58 @@ class TestSerializeCWLSubDirOutput(PlutoTestCase):
         self.maxDiff = None
         self.assertCWLDictEqual(output_json, expected_output)
 
+
+class TestRepr(PlutoTestCase):
+    def test_repr_ofile(self):
+        """
+        Test that we can output a representation of the object that can be used
+        to recreate the object
+        """
+        # create OFile object with classmethod; this saves the args
+        f = OFile.init(name = 'input.maf', size = 12, hash = '12345')
+        # create a string representation of the object
+        r = f.repr()
+        # its expected to look like this:
+        e = """OFile(name='input.maf', size=12, hash='12345')"""
+        self.assertEqual(r, e)
+        # use the string repr to create a new copy of the obj
+        x = eval(r)
+        # test that the old and new obj's are equivalent
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(f, attr), getattr(x, attr))
+        self.assertEqual(f.items(), x.items())
+
+        f = OFile.init('input.maf', size = 12, hash = '12345')
+        r = f.repr()
+        e = """OFile('input.maf', size=12, hash='12345')"""
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(f, attr), getattr(x, attr))
+        self.assertEqual(f.items(), x.items())
+
+        f = OFile.init('input.maf', size = 12, class_label = 'foo')
+        r = f.repr()
+        e = """OFile('input.maf', size=12, class_label='foo')"""
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(f, attr), getattr(x, attr))
+        self.assertEqual(f.items(), x.items())
+
+        f = OFile.init('input.maf', None, 12)
+        r = f.repr()
+        e = """OFile('input.maf', None, 12)"""
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(f, attr), getattr(x, attr))
+        self.assertEqual(f.items(), x.items())
+
+
+
+
+
+
 if __name__ == "__main__":
     unittest.main()

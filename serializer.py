@@ -99,6 +99,36 @@ class OFile(dict):
         self['location'] = self.location
         self['path'] = self.path
 
+        # use these for custom repr method
+        self.args = ()
+        self.kwargs = {}
+
+    @classmethod
+    def init(cls, *args, **kwargs):
+        obj = cls(*args, **kwargs)
+        obj.args = args
+        obj.kwargs = kwargs
+        return(obj)
+
+    def repr(self):
+        """
+        Generate a text representation of the object that can be used to recreate the object
+        Only works if object was created with `init`
+        """
+        n = 'OFile('
+        if self.args:
+            for i, arg in enumerate(self.args):
+                n += arg.__repr__()
+                if i < len(self.args) - 1 or self.kwargs:
+                    n += ', '
+        if self.kwargs:
+            for i, (k, v) in enumerate(self.kwargs.items()):
+                n += str(k) + '=' + v.__repr__()
+                if i < len(self.kwargs.items()) - 1:
+                    n += ', '
+        n += ')'
+        return(n)
+
 class ODir(dict):
     """
     Output Directory Object
