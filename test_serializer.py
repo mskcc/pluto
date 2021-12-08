@@ -6,6 +6,7 @@ unit tests for the serializer module
 import os
 import unittest
 import shutil
+import json
 from serializer import OFile, ODir
 
 if __name__ != "__main__":
@@ -383,9 +384,185 @@ class TestRepr(PlutoTestCase):
             self.assertEqual(getattr(f, attr), getattr(x, attr))
         self.assertEqual(f.items(), x.items())
 
+    def test_repr_odir(self):
+        """
+        Test that we can output a representation of the object that can be used
+        to recreate the object
+        """
+        # create ODir object with classmethod; this saves the args
+        d = ODir.init(name = 'output', items = [])
+        # create a string representation of the object
+        r = d.repr()
+        # its expected to look like this:
+        e = """ODir(name='output', items=[])"""
+        self.assertEqual(r, e)
+        # use the string repr to create a new copy of the obj
+        x = eval(r)
+        # test that the old and new obj's are equivalent
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(d, attr), getattr(x, attr))
+        self.assertEqual(d.items(), x.items())
+
+
+        d = ODir.init('output', items = [])
+        r = d.repr()
+        e = """ODir('output', items=[])"""
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(d, attr), getattr(x, attr))
+        self.assertEqual(d.items(), x.items())
+
+
+        d = ODir.init(name = 'foo', dir = '/output', items = [
+                OFile.init(name = 'input.maf', size = 12, hash ='1234')])
+        r = d.repr()
+        e = """ODir(name='foo', dir='/output', items=[OFile(name='input.maf', size=12, hash='1234')])"""
+        self.maxDiff = None
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(d, attr), getattr(x, attr))
+        self.assertEqual(d.items(), x.items())
+
+
+        d = ODir.init(name = 'bar', dir = '/output', items = [
+            ODir.init(name = 'foo', items = [
+                OFile.init( # /.../output/bar/foo/input.maf
+                name = 'input.maf', size = 12, hash = '1234')
+            ])
+        ])
+        r = d.repr()
+        e = """ODir(name='bar', dir='/output', items=[ODir(name='foo', items=[OFile(name='input.maf', size=12, hash='1234')])])"""
+        self.assertEqual(r, e)
+        x = eval(r)
+        for attr in [ 'path', 'location' ]:
+            self.assertEqual(getattr(d, attr), getattr(x, attr))
+        self.assertEqual(d.items(), x.items())
+
+class TestLoadJSON(PlutoTestCase):
+    def test_load_ofile_from_repr(self):
+        """
+        Initialize OFile objects from a JSON blob
+        """
+        json_str = """{
+                        "location": "file:///output/Sample1.maf",
+                        "basename": "Sample1.maf",
+                        "nameroot": "Sample1",
+                        "nameext": ".maf",
+                        "class": "File",
+                        "checksum": "sha1$12345",
+                        "size": 108887494
+                    }"""
+        data = json.loads(json_str)
+        f = OFile.init_dict(data)
+        ex = {'basename': 'Sample1.maf', 'class': 'File', 'size': 108887494, 'checksum': 'sha1$12345', 'location': 'file:///output/Sample1.maf', 'path': '/output/Sample1.maf'}
+        self.assertCWLDictEqual(f, ex)
+        r = f.repr()
+        ex2 = """OFile(name='Sample1.maf', size=108887494, hash='12345', dir='/output')"""
+        self.assertEqual(r, ex2)
+        f2 = eval(r)
+        self.assertCWLDictEqual(f2, ex)
+
+        f = OFile.init_dict(data, in_subdir = True)
+        ex = {'basename': 'Sample1.maf', 'class': 'File', 'size': 108887494, 'checksum': 'sha1$12345',
+            'location': 'file://Sample1.maf', 'path': 'Sample1.maf'} # NOTE: location and path here are wrong but this is meant to be overriden by the parent ODir object... should not show up in repr()
+        self.assertCWLDictEqual(f, ex)
+        r = f.repr()
+        ex = """OFile(name='Sample1.maf', size=108887494, hash='12345')"""
+        self.assertEqual(r, ex)
+
+    def test_load_odir_from_repr(self):
+        """
+        Initialize ODir objects from JSON blob
+        """
+        json_str = """{
+            "class": "Directory",
+            "basename": "analysis",
+            "listing": [
+                {
+                    "location": "file:///output/analysis/cna.txt",
+                    "basename": "cna.txt",
+                    "nameroot": "cna",
+                    "nameext": ".txt",
+                    "class": "File",
+                    "checksum": "sha1$1234",
+                    "size": 6547460
+                }
+            ],
+            "location": "file:///output/analysis"
+        }"""
+        data = json.loads(json_str)
+        d = ODir.init_dict(data)
+        ex = {'basename': 'analysis', 'class': 'Directory', 'location': 'file:///output/analysis', 'path': '/output/analysis', 'listing': [
+            {'basename': 'cna.txt', 'class': 'File', 'size': 6547460, 'checksum': 'sha1$1234', 'location': 'file:///output/analysis/cna.txt', 'path': '/output/analysis/cna.txt'}
+        ]}
+        self.assertCWLDictEqual(d, ex)
+        r = d.repr()
+        ex2 = """ODir(name='analysis', items=[OFile(name='cna.txt', size=6547460, hash='1234')], dir='/output')"""
+        self.assertEqual(r, ex2)
+        d2 = eval(r)
+        self.assertCWLDictEqual(d2, ex)
+        # self.assertCWLDictEqual(d2, data)
 
 
 
+        json_str = """{
+            "class": "Directory",
+            "basename": "portal",
+            "listing": [
+                {
+                    "location": "file:///output/portal/meta_clinical_sample.txt",
+                    "basename": "meta_clinical_sample.txt",
+                    "nameroot": "meta_clinical_sample",
+                    "nameext": ".txt",
+                    "class": "File",
+                    "checksum": "sha1$1234",
+                    "size": 135
+                },
+                {
+                    "class": "Directory",
+                    "basename": "case_lists",
+                    "listing": [
+                        {
+                            "location": "file:///output/portal/case_lists/cases_all.txt",
+                            "basename": "cases_all.txt",
+                            "nameroot": "cases_all",
+                            "nameext": ".txt",
+                            "class": "File",
+                            "checksum": "sha1$4567",
+                            "size": 448
+                        }
+                    ],
+                    "location": "file:///output/portal/case_lists"
+                },
+                {
+                    "location": "file:///output/portal/report.html",
+                    "basename": "report.html",
+                    "nameroot": "report",
+                    "nameext": ".html",
+                    "class": "File",
+                    "checksum": "sha1$7890",
+                    "size": 1026290
+                }
+            ],
+            "location": "file:///output/portal"
+        }"""
+        data = json.loads(json_str)
+        d = ODir.init_dict(data)
+        ex = {'basename': 'portal', 'class': 'Directory', 'location': 'file:///output/portal', 'path': '/output/portal', 'listing': [
+            {'basename': 'meta_clinical_sample.txt', 'class': 'File', 'size': 135, 'checksum': 'sha1$1234', 'location': 'file:///output/portal/meta_clinical_sample.txt', 'path': '/output/portal/meta_clinical_sample.txt'},
+            {'basename': 'case_lists', 'class': 'Directory', 'location': 'file:///output/portal/case_lists', 'path': '/output/portal/case_lists', 'listing': [
+                {'basename': 'cases_all.txt', 'class': 'File', 'size': 448, 'checksum': 'sha1$4567', 'location': 'file:///output/portal/case_lists/cases_all.txt', 'path': '/output/portal/case_lists/cases_all.txt'}
+            ]},
+            {'basename': 'report.html', 'class': 'File', 'size': 1026290, 'checksum': 'sha1$7890', 'location': 'file:///output/portal/report.html', 'path': '/output/portal/report.html'}
+            ]}
+        self.assertCWLDictEqual(d, ex)
+        r = d.repr()
+        ex2 = """ODir(name='portal', items=[OFile(name='meta_clinical_sample.txt', size=135, hash='1234'), ODir(name='case_lists', items=[OFile(name='cases_all.txt', size=448, hash='4567')]), OFile(name='report.html', size=1026290, hash='7890')], dir='/output')"""
+        self.assertEqual(r, ex2)
+        d2 = eval(r)
+        self.assertCWLDictEqual(d2, ex)
 
 
 if __name__ == "__main__":
