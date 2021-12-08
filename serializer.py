@@ -49,10 +49,14 @@ And still use this;
     self.assertDictEqual(output_json, expected_output)
     self.assertEqual(output_json, expected_output)
 
+This reduces the total size of the final output JSON representation used in test case code to 20% or less of the original JSON format
+
 """
 # https://stackoverflow.com/questions/44640479/mypy-annotation-for-classmethod-returning-instance
 from __future__ import annotations # python 3.7-3.9, not needed in 3.10
 import os
+import sys
+import json
 from copy import deepcopy
 from typing import List
 from urllib.parse import urlparse, urlsplit, urlunsplit
@@ -362,3 +366,31 @@ class ODir(dict):
                     n += ', '
         n += ')'
         return(n)
+
+
+
+
+
+# command line interface
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    # load the input JSON file
+    input_json = args[0]
+    with open(input_json) as fin:
+        data = json.load(fin)
+    # convert all the entries into OFile and ODir object text representations
+    new_data = {}
+    for key, value in data.items():
+        if isinstance(value, dict):
+            if value['class'] == 'File':
+                obj = OFile.init_dict(value)
+                new_data[key] = obj.repr()
+            elif value['class'] == 'Directory':
+                obj = ODir.init_dict(value)
+                new_data[key] = obj.repr()
+        else:
+            # TODO: what to do here??
+            new_data[key] = value
+    # TODO: this still outputs with quotes around the repr's and also does not indent at all,
+    # not sure how to handle that but its close enough for now
+    print(new_data)
