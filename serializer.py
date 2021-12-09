@@ -373,11 +373,17 @@ class ODir(dict):
 
 # command line interface
 if __name__ == '__main__':
+    """
+    Usage
+        $ python3 serializer.py ../output.json | sed -e 's|OFile|\nOFile|g' -e 's|ODir|\nODir|g'
+    """
     args = sys.argv[1:]
-    # load the input JSON file
     input_json = args[0]
+
+    # load the input JSON file
     with open(input_json) as fin:
         data = json.load(fin)
+
     # convert all the entries into OFile and ODir object text representations
     new_data = {}
     for key, value in data.items():
