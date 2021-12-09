@@ -28,7 +28,7 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/Sample4_purity.seg',
             'size': 488
         }
-        self.assertCWLDictEqual(obj, expected)
+        self.assertDictEqual(obj, expected)
 
     def test_cwl_file2(self):
         """
@@ -43,7 +43,7 @@ class TestSerializer(PlutoTestCase):
             'path': 'Sample4_purity.seg',
             'size': 488
         }
-        self.assertCWLDictEqual(obj, expected)
+        self.assertDictEqual(obj, expected)
 
     def test_cwl_dir1(self):
         """
@@ -57,7 +57,7 @@ class TestSerializer(PlutoTestCase):
             'path': '/tmp/foo/portal',
             'listing': []
         }
-        self.assertCWLDictEqual(obj, expected)
+        self.assertDictEqual(obj, expected)
 
     def test_cwl_dir2(self):
         """
@@ -83,7 +83,7 @@ class TestSerializer(PlutoTestCase):
             ]
         }
         self.maxDiff = None
-        self.assertCWLDictEqual(_dir, expected)
+        self.assertDictEqual(_dir, expected)
 
     def test_cwl_dir3(self):
         """
@@ -109,11 +109,11 @@ class TestSerializer(PlutoTestCase):
         }
 
         self.maxDiff = None
-        self.assertCWLDictEqual(_dir, expected)
+        self.assertDictEqual(_dir, expected)
 
     def test_assertCWLDictEqual(self):
         """
-        Test that the test_assertCWLDictEqual method works with serialized objects
+        Test that the assertCWLDictEqual method works with serialized objects
         """
         # test single File output
         obj = OFile(size = 488, name = 'Sample4_purity.seg', dir = '/tmp/foo', hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c')
