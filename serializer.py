@@ -369,21 +369,21 @@ class ODir(dict):
 
 
 
-
-
-# command line interface
-if __name__ == '__main__':
+def serialize_repr(data: Dict) -> Dict:
     """
-    Usage
-        $ python3 serializer.py ../output.json | sed -e 's|OFile|\nOFile|g' -e 's|ODir|\nODir|g'
+    Convert all the entries in the dict into their string representations
+
+    Usage:
+
+        output_json, output_dir = self.run_cwl()
+        print(serialize_repr(output_json))
+
+    Notes:
+
+        Needs to have indentation applied and some stray " need to be removed,
+        and `dir` values should be updated to use `output_dir` instead
+        
     """
-    args = sys.argv[1:]
-    input_json = args[0]
-
-    # load the input JSON file
-    with open(input_json) as fin:
-        data = json.load(fin)
-
     # convert all the entries into OFile and ODir object text representations
     new_data = {}
     for key, value in data.items():
@@ -399,4 +399,20 @@ if __name__ == '__main__':
             new_data[key] = value
     # TODO: this still outputs with quotes around the repr's and also does not indent at all,
     # not sure how to handle that but its close enough for now
+    return(new_data)
+
+# command line interface
+if __name__ == '__main__':
+    """
+    Usage
+        $ python3 serializer.py ../output.json | sed -e 's|OFile|\nOFile|g' -e 's|ODir|\nODir|g'
+    """
+    args = sys.argv[1:]
+    input_json = args[0]
+
+    # load the input JSON file
+    with open(input_json) as fin:
+        data = json.load(fin)
+
+    new_data = serialize_repr(data)
     print(new_data)
