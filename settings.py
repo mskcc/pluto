@@ -57,6 +57,7 @@ TOIL_ARGS = [
     '--singularity', # run with Singularity instead of Docker
     '--disable-user-provenance', '--disable-host-provenance',
     '--disableCaching', 'True',
+    '--realTimeLogging',
     # need to propagate the env vars for Singularity, etc., into the HPC jobs
     '--preserve-environment', 'PATH', 'TMPDIR', 'TOIL_LSF_ARGS', 'SINGULARITY_PULLDIR', 'SINGULARITY_CACHEDIR',
     'SINGULARITYENV_LC_ALL', 'PWD',  'SINGULARITY_DOCKER_USERNAME', 'SINGULARITY_DOCKER_PASSWORD',
