@@ -55,6 +55,8 @@ class CWLFile(os.PathLike):
     def __fspath__(self):
         return(self.path)
 
+class InvalidEngine(Exception):
+    pass
 
 class CWLRunner(object):
     """
@@ -215,8 +217,8 @@ class CWLRunner(object):
         else:
             # TODO: what should we do in the case where the engine doesnt match one of the above??
             # This should probably raise an error
-            raise
-            return()
+            raise InvalidEngine(">>> ERROR: invalid engine provided: {}. Try 'cwltool' or 'toil'".format(self.engine))
+
         output_json_file = os.path.join(self.dir, "output.json")
         with open(output_json_file, "w") as fout:
             json.dump(output_json, fout, indent = 4)
