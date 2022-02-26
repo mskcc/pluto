@@ -545,7 +545,11 @@ def parse_header_comments(
                 break
     return(comments, start_line)
 
-def load_mutations(filename: str) -> Tuple[ List[str], List[Dict] ]:
+def load_mutations(
+        filename: str, # input file name
+        strip: bool = False, # strip some extra keys from the mutations
+        strip_keys: list = ('all_effects', 'Consequence', 'Variant_Classification')
+        ) -> Tuple[ List[str], List[Dict] ]:
     """
     Load the mutations from a tabular .maf file
 
@@ -587,6 +591,10 @@ def load_mutations(filename: str) -> Tuple[ List[str], List[Dict] ]:
             start_line -= 1
         reader = csv.DictReader(fin, delimiter = '\t')
         mutations = [ row for row in reader ]
+    if strip:
+        for mut in mutations:
+            for key in strip_keys:
+                mut.pop(key)
     return(comments, mutations)
 
 def write_table(
