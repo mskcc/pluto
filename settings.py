@@ -142,5 +142,11 @@ DATA_SETS = {
         # $ md5sum microsatellites.head500000.list
         # aa0126e6a916ec82a2837989458918b3  microsatellites.head500000.list
         'REF_FASTA': REF_FASTA
+    },
+    # dataset selected for use with fillout since it has pooled normals
+    "07618_AG": {
+        "DIR": os.path.join(FIXTURES_DIR, "07618_AG"),
+        "BAM_DIR": os.path.join(FIXTURES_DIR, "07618_AG", "bam"),
+        "MAF_DIR": os.path.join(FIXTURES_DIR, "07618_AG", "maf")
     }
 }
