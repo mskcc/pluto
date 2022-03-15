@@ -1014,6 +1014,10 @@ class PlutoTestCase(unittest.TestCase):
         if USE_LSF:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
             self.tmpdir = mkdtemp(dir = TMP_DIR)
+        # also Toil tmp dir grows to massive sizes so do not use /tmp for it because it fills up
+        elif CWL_ENGINE == "toil":
+            Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
+            self.tmpdir = mkdtemp(dir = TMP_DIR)
         else:
             self.tmpdir = mkdtemp()
 

@@ -31,7 +31,7 @@ REF_DIR = os.path.join(os.path.dirname(THIS_DIR), "ref") # ../ref
 EXAMPLES_DIR = os.path.join(os.path.dirname(THIS_DIR), "examples") # ../examples
 
 # location to run workflows, mostly needed for use with LSF, this needs to be accessible cluster-wide
-# This is only used when running with Toil + LSF
+# This is only used when running with Toil or LSF
 TMP_DIR = os.environ.get("TMP_DIR")
 # if no dir was passed then use the pwd
 if not TMP_DIR:
