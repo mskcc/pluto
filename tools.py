@@ -343,7 +343,7 @@ def run_cwl(
     if debug:
         CLI_ARGS = [ *CLI_ARGS, '--debug' ]
     if parallel:
-        print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached!")
+        print(">>> Running cwl-runner with 'parallel'; make sure all Singularity containers are pre-cached or it will break!")
         # if the containers are not already all pre-pulled then it can cause issues with parallel jobs all trying to pull the same container to the same filepath
         CLI_ARGS = [ *CLI_ARGS, '--parallel' ]
     if js_console:
@@ -383,7 +383,7 @@ def run_cwl(
     return(output_json, output_dir)
 
 def run_cwl_toil(
-        input_data: Dict,
+        input_data: Dict, # this is supposed to be a Python dict which will be written to JSON file but sometimes it can instead be a pre-made JSON file path if you also pass in input_is_file=True
         cwl_file: Union[str, CWLFile],
         run_dir: str,
         testcase: unittest.TestCase = None, # 'self' in the unittest.TestCase instance
@@ -444,19 +444,20 @@ def run_cwl_toil(
         input_json_file = input_data
 
     if output_dir is None:
+        # /run-1/output
         output_dir = os.path.join(run_dir, "output")
     if workDir is None:
+        # /run-1/work
         workDir = os.path.join(run_dir, "work")
     if logFile is None:
+        # /run-1/toil.log
         logFile = os.path.join(run_dir, "toil.log")
     if tmpDir is None:
+        # /run-1/tmp
         tmpDir = os.path.join(run_dir, "tmp")
-        # # first try to override with the TMP_DIR from settings
-        # if TMP_DIR:
-        #     tmpDir = TMP_DIR
-        # else:
-        #     tmpDir = os.path.join('/scratch', username)
+        # tmpDir = os.path.join('/scratch', username) <- dont do this anymore, set it via TMP_DIR env var instead
 
+    # /run-1/tmp/tmpabcxyz
     tmpDirPrefix = os.path.join(tmpDir, "tmp")
 
     Path(workDir).mkdir(parents=True, exist_ok=True)
