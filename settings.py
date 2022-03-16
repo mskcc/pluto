@@ -38,9 +38,9 @@ if not TMP_DIR:
     TMP_DIR = os.path.join(os.getcwd(), "tmp")
 
 # if the tmpdir used in PlutoTestCase should be preserved (not deleted) after tests complete
-PRESERVE_TEST_DIR = os.environ.get('PRESERVE_TEST_DIR', None)
-if PRESERVE_TEST_DIR == "True":
-    PRESERVE_TEST_DIR = True
+KEEP_TMP = os.environ.get('KEEP_TMP', None)
+if KEEP_TMP == "True":
+    KEEP_TMP = True
 
 # if the CWL runner command should be printed before running it
 PRINT_COMMAND = os.environ.get('PRINT_COMMAND', None)

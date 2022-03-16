@@ -6,11 +6,12 @@ import os
 import subprocess as sp
 import csv
 import json
+# TODO: fix these imports somehow
 try:
-    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
     from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
-    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, PRESERVE_TEST_DIR, CWL_ENGINE, PRINT_COMMAND
+    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
@@ -1032,7 +1033,7 @@ class PlutoTestCase(unittest.TestCase):
 
         # prevent deletion of tmpdir after tests complete
         self.preserve = False
-        if PRESERVE_TEST_DIR:
+        if KEEP_TMP:
             self.preserve = True
             # if we are preserving the tmpdir we pretty much always want to know the path to it as well
             print(self.tmpdir)
