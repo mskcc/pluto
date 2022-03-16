@@ -450,8 +450,12 @@ def run_cwl_toil(
     if logFile is None:
         logFile = os.path.join(run_dir, "toil.log")
     if tmpDir is None:
-        # tmpDir = os.path.join(run_dir, "tmp")
-        tmpDir = os.path.join('/scratch', username)
+        tmpDir = os.path.join(run_dir, "tmp")
+        # # first try to override with the TMP_DIR from settings
+        # if TMP_DIR:
+        #     tmpDir = TMP_DIR
+        # else:
+        #     tmpDir = os.path.join('/scratch', username)
 
     tmpDirPrefix = os.path.join(tmpDir, "tmp")
 
@@ -1016,6 +1020,10 @@ class PlutoTestCase(unittest.TestCase):
             self.tmpdir = mkdtemp(dir = TMP_DIR)
         # also Toil tmp dir grows to massive sizes so do not use /tmp for it because it fills up
         elif CWL_ENGINE == "toil":
+            Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
+            self.tmpdir = mkdtemp(dir = TMP_DIR)
+        # if a TMP_DIR was passed in the environment variable
+        elif TMP_DIR:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
             self.tmpdir = mkdtemp(dir = TMP_DIR)
         else:
