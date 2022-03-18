@@ -63,8 +63,6 @@ TOIL_ARGS = [
     'SINGULARITYENV_LC_ALL', 'PWD',  'SINGULARITY_DOCKER_USERNAME', 'SINGULARITY_DOCKER_PASSWORD',
     '--retryCount', '1',
     '--statePollingWait', '10', # check available jobs every 10 seconds instead of after every job is submitted
-    '--clean', 'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
-    '--cleanWorkDir', 'onSuccess', # deletion of temporary worker directory # {always,onError,never,onSuccess}
     '--doubleMem',
     '--defaultMemory', '8G',
     '--maxCores', '16',
@@ -72,6 +70,23 @@ TOIL_ARGS = [
     '--maxMemory', '256G',
     '--not-strict'
 ]
+
+# need to explictly set Toil's handling of temp dir deletions because by default it will delete all tmp dirs and we pretty much always need to keep them because otherwise its impossible to debug anything
+# make sure TMP_DIR's dont get deleted if we wanted to keep tmp
+if KEEP_TMP:
+    TOIL_ARGS = [
+        *TOIL_ARGS,
+        '--clean', 'never', # deletion of the jobStore # {always,onError,never,onSuccess}
+        '--cleanWorkDir', 'never', # deletion of temporary worker directory # {always,onError,never,onSuccess}
+         ]
+else:
+    # use the default settings
+    TOIL_ARGS = [
+        *TOIL_ARGS,
+        '--clean', 'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
+        '--cleanWorkDir', 'onSuccess', # deletion of temporary worker directory # {always,onError,never,onSuccess}
+         ]
+
 # use LSF on the HPC to submit jobs
 if USE_LSF:
     TOIL_ARGS = [
