@@ -8,10 +8,10 @@ import csv
 import json
 # TODO: fix these imports somehow
 try:
-    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
+    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND, USE_TOIL, USE_CWLTOOL
     from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
-    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
+    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND, USE_TOIL, USE_CWLTOOL
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
@@ -170,6 +170,12 @@ class CWLRunner(object):
                 dir = "toil_output"
             else:
                 dir = "pipeline_output"
+            # if engine == 'cwltool':
+            #     dir = "cwltool_output"
+            # elif engine == 'toil':
+            #     dir = "toil_output"
+            # else:
+            #     dir = "pipeline_output"
 
         Path(os.path.abspath(dir)).mkdir(parents=True, exist_ok=True)
         self.dir = os.path.abspath(dir)
