@@ -606,7 +606,7 @@ def load_mutations(
     if strip:
         for mut in mutations:
             for key in strip_keys:
-                mut.pop(key)
+                mut.pop(key, None)
     return(comments, mutations)
 
 def write_table(
