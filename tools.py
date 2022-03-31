@@ -67,66 +67,26 @@ class CWLRunner(object):
         cwl_file: Union[str, CWLFile], # str or CWLFile
         input: dict, # pipeline input dict to be converted to JSON
         # CWL_ARGS = CWL_ARGS,
-        print_stdout: bool = False,
+        print_stdout: bool = False, # whether stdout from the CWL workflow should be printed to console
         dir: str = None, # directory to run the CWL in and write output to
         output_dir: str = None, # directory to save output files to
         input_json_file: str = None, # path to write input JSON to if you already have one chosen
         input_is_file: bool = False, # if the `input` arg should be treated as a pre-made JSON file and not a Python dict
-        verbose: bool = True,
-        testcase: unittest.TestCase = None,
-        engine: str = "cwltool", # default engine is cwl-runner cwltool
-        print_command: bool = False,
-        restart: bool = False,
-        jobStore: str = None,
-        debug: bool = False,
-        leave_tmpdir: bool = False,
-        leave_outputs: bool = False,
-        parallel: bool = False,
+        verbose: bool = True, # include descriptive messages in console stdout when running CWL
+        testcase: unittest.TestCase = None, # object to use when making assertions when running as part of a unit test
+        engine: str = "cwltool", # run the CWL with cwl-runner (`"cwltool"`) or Toil (`"toil"`)
+        print_command: bool = False, # print the fully evaluated command to console before running
+        restart: bool = False, # enable "restart" or "resume" functionality when running the CWL workflow
+        jobStore: str = None, # Toil job store to use when restarting a pipeline
+        debug: bool = False, # whether to include the `--debug` arg with the CWL runner command for extra console output in case of error and debugging
+        leave_tmpdir: bool = False, # do not delete the tmp dir after the CWL workflow finishes
+        leave_outputs: bool = False, # do not delete the output dir after completion
+        parallel: bool = False, # run workflow jobs in parallel; NOTE: make sure all Singularity containers are cached first or it will break
         js_console: bool = False,
         print_stderr: bool = False,
         use_cache: bool = True
         ):
         """
-        Parameters
-        ----------
-        cwl_file: str | CWLFile
-            CWL file path or CWLFile object to run
-        input: dict
-            data dict to be used as input to the CWL
-        CWL_ARGS: list
-            list of extra command line arguments to include when running the CWL workflow
-        print_stdout: bool
-            whether stdout from the CWL workflow should be printed to console
-        dir: str
-            directory to run the CWL workflow in; if `None`, a temp dir will be created automatically
-        output_dir: str
-            output directory for the CWL workflow; if `None`, defaults to 'output' inside the `dir` directory
-        input_json_file: str
-            path to the input.json file to write CWL input data to
-        input_is_file: bool
-            if the `input` arg should be treated as a pre-made JSON file path and not a Python dict object
-        verbose: bool
-            include descriptive messages in console stdout when running CWL
-        testcase: unittest.TestCase
-            `unittest.TestCase` object to use when making assertions when running as part of a unit test
-        engine: str
-            run the CWL with cwl-runner (`"cwltool"`) or Toil (`"toil"`)
-        print_command: bool
-            print the fully evaluated command to console before running
-        restart: bool
-            enable "restart" or "resume" functionality when running the CWL workflow
-        jobStore: str
-            Toil job store to use when restarting a pipeline
-        debug: bool
-            whether to include the `--debug` arg with the CWL runner command for extra console output in case of error and debugging
-        leave_tmpdir: bool
-            do not delete the tmp dir after the CWL workflow finishes
-        leave_outputs: bool
-            do not delete the output dir after completion
-        parallel: bool
-            run workflow jobs in parallel; NOTE: make sure all Singularity containers are cached first or it will break
-
-
         Examples
         --------
         Example usage::
@@ -246,30 +206,12 @@ class CWLRunner(object):
 
 
 def run_command(
-    args: List[str],
-    testcase: unittest.TestCase = None,
-    validate: bool = False,
+    args: List[str], # a list of shell args to execute
+    testcase: unittest.TestCase = None, # a test case instance for making assertions
+    validate: bool = False, # whether to check that the exit code was 0; requires `testcase`
     print_stdout: bool = False) -> Tuple[int, str, str]:
     """
     Helper function to run a shell command easier
-
-    Parameters
-    ----------
-    args: list
-        a list of shell args to execute
-    validate: bool
-        whether to check that the exit code was 0; requires `testcase`
-    testcase: unittest.TestCase
-        a test case instance for making assertions
-
-    Returns
-    -------
-    int
-        the command return code
-    str
-        the command stdout
-    str
-        the command stderr
 
     Examples
     -------
@@ -317,13 +259,6 @@ def run_cwl(
     ) -> Tuple[Dict, str]:
     """
     Run the CWL with cwltool / cwl-runner
-
-    Returns
-    -------
-    dict:
-        output data dictionary loaded from CWL stdout JSON
-    str:
-        path to the `output` directory from the CWL workflow
     """
     if CLI_ARGS is None:
         CLI_ARGS = CWL_ARGS
@@ -511,26 +446,11 @@ def run_cwl_toil(
 
 
 def parse_header_comments(
-    filename: str,
-    comment_char: str = '#',
+    filename: str, # path to input file
+    comment_char: str = '#', # comment character
     ignore_comments: bool = False) -> Tuple[ List[str], int ]:
     """
     Parse a file with comments in its header to return the comments and the line number to start reader from.
-
-    Parameters
-    ----------
-    filename: str
-        path to input file
-    comment_char: str
-        comment character
-
-    Returns
-    -------
-    list
-        a list of comment lines from the file header
-    int
-        the line number on which file data starts (the line after the last comment)
-
 
     Examples
     --------
@@ -565,18 +485,6 @@ def load_mutations(
     """
     Load the mutations from a tabular .maf file
 
-    Parameters
-    ----------
-    filename: str
-        path to input file
-
-    Returns
-    -------
-    list
-        a list of comment lines from the file
-    list
-        a list of dicts containing the records from the file
-
     Examples
     --------
     Example usage::
@@ -610,31 +518,14 @@ def load_mutations(
     return(comments, mutations)
 
 def write_table(
-    tmpdir: str,
-    filename: str,
-    lines: List[ List[str] ],
-    delimiter: str = '\t',
-    filepath: str = None) -> str:
+    tmpdir: str, # path to parent directory to save the file to
+    filename: str, # basename for the file to write to
+    lines: List[ List[str] ], # a list of lists, containing each field to write
+    delimiter: str = '\t', # character to join the line elements on
+    filepath: str = None # full path to write the output file to; overrides tmpdir and filename
+    ) -> str:
     """
     Write a table to a temp location
-
-    Parameters
-    ----------
-    tmpdir: str
-        path to parent directory to save the file to
-    filename: str
-        basename for the file to write to
-    filepath: str
-        full path to write the output file to; overrides tmpdir and filename
-    lines: list
-        a list of lists, containing each field to write
-    delimiter: str
-        character to join the line elements on
-
-    Returns
-    -------
-    str
-        path to output file
     """
     if not filepath:
         filepath = os.path.join(tmpdir, filename)
@@ -644,17 +535,13 @@ def write_table(
             f.write(line_str)
     return(filepath)
 
-def dicts2lines(dict_list: List[Dict], comment_list: List[ List[str] ] = None) -> List[ List[str] ]:
+def dicts2lines(
+    dict_list: List[Dict], # a list of dictionaries with data to be written
+    comment_list: List[ List[str] ] = None # a list of comment lines to prepend to the file data
+    ) -> List[ List[str] ]:
     """
     Helper function to convert a list of dicts into a list of lines to use with write_table
     create a list of line parts to pass for write_table
-
-    Parameters
-    ----------
-    dict_list: list
-        a list of dictionaries with data to be written
-    comment_list: list
-        a list of comment lines to prepend to the file data
 
     Note
     -----
@@ -698,16 +585,6 @@ def dicts2lines(dict_list: List[Dict], comment_list: List[ List[str] ] = None) -
 def md5_file(filename: str) -> str:
     """
     Get md5sum of a file by reading it in small chunks. This avoids issues with Python memory usage when hashing large files.
-
-    Parameters
-    ----------
-    filename: str
-        path to input file
-
-    Returns
-    -------
-    str
-        hash for the file
     """
     with open(filename, "rb") as f:
         file_hash = hashlib.md5()
@@ -722,11 +599,6 @@ def md5_file(filename: str) -> str:
 def md5_obj(obj: object) -> str:
     """
     Get the md5sum of a Python object in memory by converting it to JSON
-
-    Returns
-    -------
-    str
-        the object hash value
     """
     hash = hashlib.md5(json.dumps(obj, sort_keys=True).encode('utf-8')).hexdigest()
     return(hash)
