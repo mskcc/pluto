@@ -7,14 +7,25 @@ PRINT_COMMAND=true KEEP_TMP=true CWL_ENGINE=toil LARGE_TESTS=true python3 test_t
 
 """
 import os
-from classes import (
-    CWLEngine,
-    UseLSF,
-    EnableLargeTests,
-    EnableIntergrationTests,
-    KeepTmp,
-    PrintCommand
-    )
+# TODO: fix these imports somehow
+try:
+    from classes import (
+        CWLEngine,
+        UseLSF,
+        EnableLargeTests,
+        EnableIntergrationTests,
+        KeepTmp,
+        PrintCommand
+        )
+except ModuleNotFoundError:
+    from .classes import (
+        CWLEngine,
+        UseLSF,
+        EnableLargeTests,
+        EnableIntergrationTests,
+        KeepTmp,
+        PrintCommand
+        )
 
 # enable execution of very large tests used in some test cases;
 ENABLE_LARGE_TESTS = EnableLargeTests(os.environ.get('LARGE_TESTS', False))
@@ -169,5 +180,10 @@ DATA_SETS = {
         "DIR": os.path.join(FIXTURES_DIR, "07618_AG"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "07618_AG", "bam"),
         "MAF_DIR": os.path.join(FIXTURES_DIR, "07618_AG", "maf")
+    },
+    "Fillout01": {
+        "DIR": os.path.join(FIXTURES_DIR, "Fillout01"),
+        "BAM_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "bam"),
+        "MAF_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "maf")
     }
 }
