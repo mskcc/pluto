@@ -24,6 +24,32 @@ class SettingBaseClass(object):
     def __eq__(self, other):
         return(self.value == other)
 
+class BooleanSettingBaseClass(object):
+    """
+    Similar to SettingBaseClass but accepts a string value and converts it to a boolean
+    """
+    def __init__(self, value: str) -> None:
+        self._value = value
+        value = str(value).lower()
+        if value == "true":
+            value = True
+        elif value == "false":
+            value = False
+        elif value == "none":
+            value = False
+        else:
+            value = bool(value)
+        self.value = value
+
+    def __str__(self):
+        return(str(self.value))
+
+    def __eq__(self, other):
+        return(self.value == other)
+
+    def __bool__(self):
+        return(self.value)
+
 class CWLEngine(SettingBaseClass):
     """
     CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
@@ -36,3 +62,32 @@ class CWLEngine(SettingBaseClass):
         super().__init__(value, default, *args, **kwargs)
         self.cwltool = self.value == "cwltool"
         self.toil = self.value == "toil"
+
+class UseLSF(BooleanSettingBaseClass):
+    """
+    better replacement for:
+
+    USE_LSF = os.environ.get('USE_LSF') == "True"
+
+    usage:
+
+    USE_LSF = UseLSF(os.environ.get('USE_LSF', None))
+    """
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
+
+class EnableLargeTests(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
+
+class EnableIntergrationTests(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
+
+class KeepTmp(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
+
+class PrintCommand(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)

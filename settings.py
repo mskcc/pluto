@@ -4,10 +4,16 @@ Put settings to use for the tests in here for easier access
 import os
 from classes import (
     CWLEngine,
+    UseLSF,
+    EnableLargeTests,
+    EnableIntergrationTests,
+    KeepTmp,
+    PrintCommand
     )
 
 # disable execution of very large tests;
-ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
+# ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
+ENABLE_LARGE_TESTS = EnableLargeTests(os.environ.get('LARGE_TESTS', False))
 # $ LARGE_TESTS=True python3 tests
 # tag large test cases with:
 # @unittest.skipIf(ENABLE_LARGE_TESTS != True, "is a large test")
@@ -15,12 +21,13 @@ if ENABLE_LARGE_TESTS:
     print(">>> Enabling execution of large test cases...")
 
 # use this flag for enabling the huge workflow test cases for Jenkins CI, etc
-ENABLE_INTEGRATION_TESTS = os.environ.get('INTEGRATION_TESTS') == "True"
+ENABLE_INTEGRATION_TESTS = EnableIntergrationTests(os.environ.get('INTEGRATION_TESTS', False))
 if ENABLE_INTEGRATION_TESTS:
     print(">>> Enabling execution of large integration test cases...")
 
 # use LSF with Toil
-USE_LSF = os.environ.get('USE_LSF') == "True"
+# USE_LSF = os.environ.get('USE_LSF') == "True"
+USE_LSF = UseLSF(os.environ.get('USE_LSF', None))
 
 # whether Toil or cwltool should be used
 CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
@@ -41,14 +48,10 @@ if not TMP_DIR:
     TMP_DIR = os.path.join(os.getcwd(), "tmp")
 
 # if the tmpdir used in PlutoTestCase should be preserved (not deleted) after tests complete
-KEEP_TMP = os.environ.get('KEEP_TMP', None)
-if KEEP_TMP == "True":
-    KEEP_TMP = True
+KEEP_TMP = KeepTmp(os.environ.get('KEEP_TMP', False))
 
 # if the CWL runner command should be printed before running it
-PRINT_COMMAND = os.environ.get('PRINT_COMMAND', None)
-if PRINT_COMMAND == "True":
-    PRINT_COMMAND = True
+PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', False))
 
 # common args to be included in all cwltool invocations
 CWL_ARGS = [
