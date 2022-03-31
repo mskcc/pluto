@@ -23,6 +23,8 @@ class SettingBaseClass(object):
         return(self.value)
     def __eq__(self, other):
         return(self.value == other)
+    def __bool__(self):
+        return(bool(self._value))
 
 class BooleanSettingBaseClass(object):
     """

@@ -1,5 +1,10 @@
 """
 Put settings to use for the tests in here for easier access
+
+Override these settings with environment variables:
+
+PRINT_COMMAND=true KEEP_TMP=true CWL_ENGINE=toil LARGE_TESTS=true python3 test_tools.py
+
 """
 import os
 from classes import (
@@ -11,12 +16,8 @@ from classes import (
     PrintCommand
     )
 
-# disable execution of very large tests;
-# ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
+# enable execution of very large tests used in some test cases;
 ENABLE_LARGE_TESTS = EnableLargeTests(os.environ.get('LARGE_TESTS', False))
-# $ LARGE_TESTS=True python3 tests
-# tag large test cases with:
-# @unittest.skipIf(ENABLE_LARGE_TESTS != True, "is a large test")
 if ENABLE_LARGE_TESTS:
     print(">>> Enabling execution of large test cases...")
 
@@ -26,7 +27,6 @@ if ENABLE_INTEGRATION_TESTS:
     print(">>> Enabling execution of large integration test cases...")
 
 # use LSF with Toil
-# USE_LSF = os.environ.get('USE_LSF') == "True"
 USE_LSF = UseLSF(os.environ.get('USE_LSF', None))
 
 # whether Toil or cwltool should be used
