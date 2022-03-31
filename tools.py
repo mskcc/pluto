@@ -8,10 +8,10 @@ import csv
 import json
 # TODO: fix these imports somehow
 try:
-    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND, USE_TOIL, USE_CWLTOOL
+    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
     from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
-    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND, USE_TOIL, USE_CWLTOOL
+    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
@@ -1027,7 +1027,7 @@ class PlutoTestCase(unittest.TestCase):
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
             self.tmpdir = mkdtemp(dir = TMP_DIR)
         # also Toil tmp dir grows to massive sizes so do not use /tmp for it because it fills up
-        elif CWL_ENGINE == "toil":
+        elif CWL_ENGINE.toil:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
             self.tmpdir = mkdtemp(dir = TMP_DIR)
         # if a TMP_DIR was passed in the environment variable
@@ -1060,17 +1060,10 @@ class PlutoTestCase(unittest.TestCase):
         self,
         input: Dict = None,
         cwl_file: Union[str, CWLFile] = None,
-        engine: str = "cwltool",
+        engine: str = "cwltool", # TODO: need better handling for the default value here, try to get it from CWL_ENGINE instead
         *args, **kwargs) -> Tuple[Dict, str]:
         """
         Run the CWL specified for the test case
-
-        Parameters
-        ----------
-        input: dict
-            data dict to be used as input to the CWL
-        cwl_file: str | CWLFile
-            the CWLFile object or path to CWL file to run
         """
         # set default values
         if input is None:
@@ -1079,7 +1072,7 @@ class PlutoTestCase(unittest.TestCase):
             cwl_file = CWLFile(self.cwl_file)
 
         # override with value passed from env var
-        if CWL_ENGINE:
+        if CWL_ENGINE != engine:
             engine = CWL_ENGINE
 
         runner = CWLRunner(
@@ -1163,7 +1156,7 @@ class PlutoTestCase(unittest.TestCase):
 
         # if we are running with Toil then we need to remove the 'path' key
         # because thats just what Toil does idk why
-        if CWL_ENGINE == "toil":
+        if CWL_ENGINE.toil:
             bad_keys = [ *bad_keys, 'path' ]
 
         # copy the input dicts just to be safe

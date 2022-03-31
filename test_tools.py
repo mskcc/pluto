@@ -343,7 +343,7 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        if CWL_ENGINE == 'toil':
+        if CWL_ENGINE.toil:
             expected_output['output_file']['nameext'] = '.maf'
             expected_output['output_file']['nameroot'] = 'output'
             expected_output['output_file'].pop('path')
@@ -409,7 +409,7 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        if CWL_ENGINE == 'toil':
+        if CWL_ENGINE.toil:
             expected_output['output_file']['nameext'] = '.maf'
             expected_output['output_file']['nameroot'] = 'output'
             expected_output['output_file'].pop('path')
@@ -550,6 +550,10 @@ class TestCleanDicts(PlutoTestCase):
 
 class TestPlutoTestCase(PlutoTestCase):
     def test_assertCWLDictEqual(self):
+        """
+        Test that CWL output dict objects have their keys stripped down to remove inconsistent output fields
+        Basic test cases
+        """
         d1 = {'a':1, 'nameext': "foo", 'nameroot':'bar'}
         d2 = {'a':1}
         self.assertCWLDictEqual(d1, d2)
@@ -561,6 +565,76 @@ class TestPlutoTestCase(PlutoTestCase):
         d1 = {'a':1, 'nameroot':'bar', 'b':[{'c':1, 'nameext': "foo"}, {'d':2}]}
         d2 = {'a':1, 'b':[{'c':1}, {'d':2}]}
         self.assertCWLDictEqual(d1, d2)
+
+    def test_assertCWLDictEqual_1(self):
+        """
+        Test cases with more complicated CWL output objects
+        """
+        self.maxDiff = None
+        output_file = "foo.txt"
+        output_path = os.path.join(self.tmpdir, output_file)
+        d1 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12',
+                'size': 114008492,
+                'nameext': 'txt', # this gets removed by default
+                'nameroot': 'foo', # this gets removed by default
+                'path':  output_path
+                }
+            }
+        d2 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'path':  output_path,
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12',
+                'size': 114008492
+                }
+            }
+        self.assertCWLDictEqual(d1, d2)
+
+    def test_assertCWLDictEqual_related_keys(self):
+        """
+        Test cases with removal of related keys
+        Use "related_keys" to strip some dict fields but only in the presence of other fields
+        Real World Use Case: some files have inconsistent size and checksum due to embedded timestamps, etc.,
+        so need need to strip those off when doing comparisons
+        """
+        self.maxDiff = None
+        output_file = "foo.txt"
+        output_path = os.path.join(self.tmpdir, output_file)
+
+        # in each dict, if basename == output_file, then remove fields size, checksum
+        related_keys = [('basename', output_file, ['size', 'checksum'])]
+
+        d1 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12', # this gets removed by related_keys
+                'size': 114008492, # this gets removed by related_keys
+                'nameext': 'txt', # this gets removed by default
+                'nameroot': 'foo', # this gets removed by default
+                'path':  output_path
+                }
+            }
+        d2 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'path':  output_path,
+                }
+            }
+
+        self.assertCWLDictEqual(d1, d2, related_keys = related_keys)
+
+
 
 if __name__ == "__main__":
     unittest.main()

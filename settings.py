@@ -2,6 +2,9 @@
 Put settings to use for the tests in here for easier access
 """
 import os
+from classes import (
+    CWLEngine,
+    )
 
 # disable execution of very large tests;
 ENABLE_LARGE_TESTS = os.environ.get('LARGE_TESTS') == "True"
@@ -20,22 +23,7 @@ if ENABLE_INTEGRATION_TESTS:
 USE_LSF = os.environ.get('USE_LSF') == "True"
 
 # whether Toil or cwltool should be used
-CWL_ENGINE = os.environ.get('CWL_ENGINE', None)
-# if it was passed, then convert it to lowercase
-if CWL_ENGINE:
-    CWL_ENGINE = str(CWL_ENGINE).lower()
-
-# internal variable to set the CWL runner to use
-USE_TOIL = False
-USE_CWLTOOL = True
-
-if CWL_ENGINE == 'toil':
-    USE_TOIL = True
-    USE_CWLTOOL = False
-# elif CWL_ENGINE == 'cwltool':
-#     USE_TOIL = True
-#     USE_CWLTOOL = False
-
+CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
 
 # the location of this file
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
