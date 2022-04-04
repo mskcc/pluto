@@ -160,6 +160,7 @@ DATA_SETS = {
         "MAF_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "maf"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "bam"),
         "FACETS_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "facets"),
+        "FACETS_SUITE_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "facets-suite"),
         "QC_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "qc"),
         "INPUTS_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "inputs"),
         'REF_FASTA': REF_FASTA,
