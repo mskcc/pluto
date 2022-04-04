@@ -159,7 +159,11 @@ DATA_SETS = {
     "Proj_1": { # same as Proj_08390_G but both filenames and file contents have been scrubbed; results in different file md5's
         "MAF_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "maf"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "bam"),
-        'REF_FASTA': REF_FASTA
+        "FACETS_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "facets"),
+        "QC_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "qc"),
+        "INPUTS_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "inputs"),
+        'REF_FASTA': REF_FASTA,
+        "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist",
     },
     "demo":{ # small subset of samples on a full project
         "DIR": os.path.join(FIXTURES_DIR, "demo"),
