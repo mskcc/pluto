@@ -693,6 +693,16 @@ class TableReader(object):
     Note
     ----
     Input file must have column headers!
+
+
+    ----
+    NOTE: See
+
+    helix_filters_01.bin.cBioPortal_utils.TableReader
+    helix_filters_01.bin.cBioPortal_utils.MafReader
+    helix_filters_01.bin.cBioPortal_utils.MafWriter
+
+    https://github.com/mskcc/helix_filters_01/blob/master/bin/cBioPortal_utils.py
     """
     def __init__(self,
         filename: str,
@@ -776,6 +786,15 @@ class MafWriter(csv.DictWriter):
     Since we have to make assumptions about the delimiter and lineterminator its easier to just use csv.DictWriter directly anyway
 
     https://github.com/python/cpython/blob/12803c59d54ff1a45a5b08cef82652ef199b3b07/Lib/csv.py#L130
+
+    ----
+    NOTE: See
+
+    helix_filters_01.bin.cBioPortal_utils.TableReader
+    helix_filters_01.bin.cBioPortal_utils.MafReader
+    helix_filters_01.bin.cBioPortal_utils.MafWriter
+
+    https://github.com/mskcc/helix_filters_01/blob/master/bin/cBioPortal_utils.py
     """
     def __init__(
         self,
