@@ -8,7 +8,8 @@
 # $ LOCAL=True ./run-toil.sh cwl/workflow_with_facets.cwl input.json
 
 
-# ~~~~~ ENV VARS TO KEEP THINGS FROM BREAKING ~~~~~ #
+# ~~~~~ ENV VARS NEEDED TO KEEP PIPELINE RUNS FROM BREAKING ~~~~~ #
+# get these from ` . env.juno.sh toil`
 # need these to avoid Dockerhub rate limit issues with pipelines; get it from env.sh
 [ $SINGULARITY_DOCKER_USERNAME ] || echo ">>> WARNING: SINGULARITY_DOCKER_USERNAME is not set, HPC jobs might break!"
 [ $SINGULARITY_DOCKER_PASSWORD ] || echo ">>> WARNING: SINGULARITY_DOCKER_PASSWORD is not set, HPC jobs might break!"
@@ -47,7 +48,14 @@ which toil-cwl-runner 1>/dev/null
 
 # files and dirs for this current pipeline run instance
 TIMESTAMP="$(date +%s)"
-RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
+
+DEFAULT_RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
+
+# allow for override from command line;
+# $ RUN_DIR=foo ./run-cwltool.sh ...
+RUN_DIR="${RUN_DIR:-$DEFAULT_RUN_DIR}"
+# RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
+
 LOG_DIR="${RUN_DIR}/logs"
 OUTPUT_DIR="${RUN_DIR}/output"
 TMP_DIR="${RUN_DIR}/tmp"
