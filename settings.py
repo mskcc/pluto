@@ -189,6 +189,7 @@ DATA_SETS = {
     "Fillout01": {
         "DIR": os.path.join(FIXTURES_DIR, "Fillout01"),
         "BAM_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "bam"),
-        "MAF_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "maf")
+        "MAF_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "maf"),
+        "OUTPUT_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "output")
     }
 }
