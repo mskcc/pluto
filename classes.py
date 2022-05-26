@@ -93,3 +93,7 @@ class KeepTmp(BooleanSettingBaseClass):
 class PrintCommand(BooleanSettingBaseClass):
     def __init__(self, value: str, *args, **kwargs) -> None:
         super().__init__(value, *args, **kwargs)
+
+class PrintTestName(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)

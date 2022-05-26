@@ -8,10 +8,34 @@ import csv
 import json
 # TODO: fix these imports somehow
 try:
-    from .settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
+    from .settings import (
+        CWL_ARGS,
+        TOIL_ARGS,
+        DATA_SETS,
+        KNOWN_FUSIONS_FILE,
+        IMPACT_FILE,
+        USE_LSF,
+        TMP_DIR,
+        KEEP_TMP,
+        CWL_ENGINE,
+        PRINT_COMMAND,
+        PRINT_TESTNAME
+    )
     from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
-    from settings import CWL_ARGS, TOIL_ARGS, DATA_SETS, KNOWN_FUSIONS_FILE, IMPACT_FILE, USE_LSF, TMP_DIR, KEEP_TMP, CWL_ENGINE, PRINT_COMMAND
+    from settings import (
+        CWL_ARGS,
+        TOIL_ARGS,
+        DATA_SETS,
+        KNOWN_FUSIONS_FILE,
+        IMPACT_FILE,
+        USE_LSF,
+        TMP_DIR,
+        KEEP_TMP,
+        CWL_ENGINE,
+        PRINT_COMMAND,
+        PRINT_TESTNAME
+    )
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
@@ -912,6 +936,9 @@ class PlutoTestCase(unittest.TestCase):
         """
         # put the CWL input data here; this will get dumped to a JSON file before executing tests
         self.input = {}
+
+        if PRINT_TESTNAME:
+            print("\n>>> starting test: " + self._testMethodName)
 
         # if we are using LSF then the tmpdir needs to be created in a location accessible by the whole cluster
         if USE_LSF:

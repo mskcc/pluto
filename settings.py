@@ -15,7 +15,8 @@ try:
         EnableLargeTests,
         EnableIntergrationTests,
         KeepTmp,
-        PrintCommand
+        PrintCommand,
+        PrintTestName
         )
 except ModuleNotFoundError:
     from .classes import (
@@ -24,7 +25,8 @@ except ModuleNotFoundError:
         EnableLargeTests,
         EnableIntergrationTests,
         KeepTmp,
-        PrintCommand
+        PrintCommand,
+        PrintTestName
         )
 
 # enable execution of very large tests used in some test cases;
@@ -63,6 +65,9 @@ KEEP_TMP = KeepTmp(os.environ.get('KEEP_TMP', False))
 
 # if the CWL runner command should be printed before running it
 PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', False))
+
+# print the name of each test before it starts running
+PRINT_TESTNAME = PrintTestName(os.environ.get('PRINT_TESTNAME', False))
 
 # common args to be included in all cwltool invocations
 CWL_ARGS = [
