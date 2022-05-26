@@ -989,6 +989,10 @@ class PlutoTestCase(unittest.TestCase):
         if cwl_file is None:
             cwl_file = CWLFile(self.cwl_file)
 
+        # print a warning if self.input was empty
+        if not input:
+            print(">>> WARNING: empty input passed to PlutoTestCase.run_cwl()")
+
         # override with value passed from env var
         if CWL_ENGINE != engine:
             engine = CWL_ENGINE
