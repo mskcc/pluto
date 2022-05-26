@@ -6,6 +6,7 @@ import os
 import subprocess as sp
 import csv
 import json
+from datetime import datetime
 # TODO: fix these imports somehow
 try:
     from .settings import (
@@ -934,6 +935,7 @@ class PlutoTestCase(unittest.TestCase):
 
         If USE_LSF is set, then we need to create the tmpdir in the pwd where its assumed to be accessible from the cluster
         """
+        self.start_time = datetime.now()
         # put the CWL input data here; this will get dumped to a JSON file before executing tests
         self.input = {}
 
@@ -970,8 +972,15 @@ class PlutoTestCase(unittest.TestCase):
         ----
         This method will delete `self.tmpdir` unless `self.preserve` is `True`
         """
+        self.stop_time = datetime.now()
+        self.time_elapsed = self.stop_time - self.start_time
+
+        # if we were using PRINT_TESTNAME then we will want to know when the test completed as well
+        if PRINT_TESTNAME:
+            print("\n>>> stopping test: {} ({})".format(self._testMethodName, self.time_elapsed))
+
+        # remove the tmpdir upon test completion
         if not self.preserve:
-            # remove the tmpdir upon test completion
             shutil.rmtree(self.tmpdir)
 
     def run_cwl(
@@ -991,7 +1000,7 @@ class PlutoTestCase(unittest.TestCase):
 
         # print a warning if self.input was empty
         if not input:
-            print(">>> WARNING: empty input passed to PlutoTestCase.run_cwl()")
+            print(">>> WARNING: empty input passed to run_cwl() by test: ", self._testMethodName)
 
         # override with value passed from env var
         if CWL_ENGINE != engine:
