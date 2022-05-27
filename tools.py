@@ -904,7 +904,7 @@ class PlutoTestCase(unittest.TestCase):
     runner_args = dict(
         leave_outputs = False,
         leave_tmpdir = False,
-        debug = False,
+        debug = True,
         parallel = False,
         js_console = False,
         print_command = False
