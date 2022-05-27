@@ -936,11 +936,12 @@ class PlutoTestCase(unittest.TestCase):
         If USE_LSF is set, then we need to create the tmpdir in the pwd where its assumed to be accessible from the cluster
         """
         self.start_time = datetime.now()
+        self.test_label = "{}.{}".format(type(self).__name__, self._testMethodName)
         # put the CWL input data here; this will get dumped to a JSON file before executing tests
         self.input = {}
 
         if PRINT_TESTNAME:
-            print("\n>>> starting test: " + self._testMethodName)
+            print("\n>>> starting test: {}".format(self.test_label))
 
         # if we are using LSF then the tmpdir needs to be created in a location accessible by the whole cluster
         if USE_LSF:
@@ -977,7 +978,7 @@ class PlutoTestCase(unittest.TestCase):
 
         # if we were using PRINT_TESTNAME then we will want to know when the test completed as well
         if PRINT_TESTNAME:
-            print("\n>>> stopping test: {} ({})".format(self._testMethodName, self.time_elapsed))
+            print("\n>>> stopping test: {} ({})".format(self.test_label, self.time_elapsed))
 
         # remove the tmpdir upon test completion
         if not self.preserve:
