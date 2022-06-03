@@ -1112,7 +1112,8 @@ class PlutoTestCase(unittest.TestCase):
         expected_num: int, # number of mutations that should be in the file
         expected_hash: str, # md5 of the Python loaded mutation list object
         strip: bool = True, # need this to remove variable mutation fields
-        _print: bool = False # don't run tests, just print the results (for dev and debug)
+        _print: bool = False, # don't run tests, just print the results (for dev and debug)
+        *args, **kwargs
         ):
         """
         wrapper for asserting that the number of mutations and the md5 of the Python mutation object match the expected values
@@ -1124,14 +1125,14 @@ class PlutoTestCase(unittest.TestCase):
         if _print:
             print(len(mutations), hash)
         else:
-            self.assertEqual(len(mutations), expected_num)
-            self.assertEqual(hash, expected_hash)
+            self.assertEqual(len(mutations), expected_num, *args, **kwargs)
+            self.assertEqual(hash, expected_hash, *args, **kwargs)
 
     def assertEqualNumMutations(
         self,
         mutationFiles: List[str], # several mutation file paths
-        expectedMutFile: str # single mutation file path to compare number of muts against
-        ):
+        expectedMutFile: str, # single mutation file path to compare number of muts against
+        *args, **kwargs):
         """
         wrapper for asserting that the number of mutations across all mutation files in each group is equal
         """
@@ -1145,4 +1146,29 @@ class PlutoTestCase(unittest.TestCase):
         comments, expected_mutations = self.load_mutations(expectedMutFile)
         sumExpectedMuts = len(expected_mutations)
 
-        self.assertEqual(sumMuts, sumExpectedMuts)
+        self.assertEqual(sumMuts, sumExpectedMuts, *args, **kwargs)
+
+    def assertMutFieldContains(
+        self,
+        filepath: str, # path to mutation file
+        fieldname: str, # path to mutation .maf field to check
+        values: List[str], # list of desired values in the field
+        containsAll: bool = False, # only the provided values are allowed
+        *args, **kwargs
+        ):
+        """
+        Test that the set of all values in a column of the mutation maf file contains all the desired values
+        """
+        wantedValuesSet = set(values)
+        comments, mutations = self.load_mutations(filepath)
+        allValues = set()
+        for mut in mutations:
+            allValues.add(mut[fieldname])
+        missingWanted = wantedValuesSet - allValues
+        message = "values {} missing from field {}; wanted: {} got: {}".format(missingWanted, fieldname, wantedValuesSet, allValues)
+        self.assertEqual(len(missingWanted), 0, message, *args, **kwargs)
+
+        if containsAll:
+            unwantedValues = allValues - wantedValuesSet
+            message = "got unwanted values in field {}: {} : wanted values: {}".format(fieldname, unwantedValues, wantedValuesSet)
+            self.assertEqual(len(unwantedValues), 0, message, *args, **kwargs)
