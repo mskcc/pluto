@@ -906,7 +906,8 @@ class PlutoTestCase(unittest.TestCase):
         leave_tmpdir = False,
         debug = True,
         parallel = False,
-        js_console = False,
+        js_console = True, #False,
+        # use_cache = False, # need to set this for some samples fillout workflows that break on split_vcf_to_mafs
         print_command = False
         )
 
@@ -1104,3 +1105,44 @@ class PlutoTestCase(unittest.TestCase):
             print(json.dumps(d1_copy, indent = 4))
             print(json.dumps(d2_copy, indent = 4))
         self.assertDictEqual(d1_copy, d2_copy, *args, **kwargs)
+
+    def assertNumMutationsHash(
+        self,
+        mutationsPath: str, # path to mutation file to test
+        expected_num: int, # number of mutations that should be in the file
+        expected_hash: str, # md5 of the Python loaded mutation list object
+        strip: bool = True, # need this to remove variable mutation fields
+        _print: bool = False # don't run tests, just print the results (for dev and debug)
+        ):
+        """
+        wrapper for asserting that the number of mutations and the md5 of the Python mutation object match the expected values
+        Use this with `strip` for removal of mutation keys that can be variable and change md5
+        """
+        comments, mutations = self.load_mutations(mutationsPath, strip = strip)
+        hash = md5_obj(mutations)
+
+        if _print:
+            print(len(mutations), hash)
+        else:
+            self.assertEqual(len(mutations), expected_num)
+            self.assertEqual(hash, expected_hash)
+
+    def assertEqualNumMutations(
+        self,
+        mutationFiles: List[str], # several mutation file paths
+        expectedMutFile: str # single mutation file path to compare number of muts against
+        ):
+        """
+        wrapper for asserting that the number of mutations across all mutation files in each group is equal
+        """
+        numMuts = []
+        for filepath in mutationFiles:
+            comments, mutations = self.load_mutations(filepath)
+            numMutations = len(mutations)
+            numMuts.append(numMutations)
+        sumMuts = sum(numMuts)
+
+        comments, expected_mutations = self.load_mutations(expectedMutFile)
+        sumExpectedMuts = len(expected_mutations)
+
+        self.assertEqual(sumMuts, sumExpectedMuts)
