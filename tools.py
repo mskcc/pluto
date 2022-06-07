@@ -1128,6 +1128,18 @@ class PlutoTestCase(unittest.TestCase):
             self.assertEqual(len(mutations), expected_num, *args, **kwargs)
             self.assertEqual(hash, expected_hash, *args, **kwargs)
 
+    def assertNumMutations(
+        self,
+        filepath: str,
+        expected_num: int,
+        *args, **kwargs
+        ):
+        """
+        Assertion for the number of mutations in a file
+        """
+        comments, mutations = self.load_mutations(filepath)
+        self.assertEqual(len(mutations), expected_num, *args, **kwargs)
+
     def assertEqualNumMutations(
         self,
         mutationFiles: List[str], # several mutation file paths
@@ -1172,3 +1184,36 @@ class PlutoTestCase(unittest.TestCase):
             unwantedValues = allValues - wantedValuesSet
             message = "got unwanted values in field {}: {} : wanted values: {}".format(fieldname, unwantedValues, wantedValuesSet)
             self.assertEqual(len(unwantedValues), 0, message, *args, **kwargs)
+
+    def assertHeaderEquals(
+        self,
+        filepath: str,
+        expected_headers: List[str],
+        *args, **kwargs
+        ):
+        """
+        Assertion for validating the header fields of a tab separated file
+        """
+        with open(filepath) as f:
+            header = next(f)
+        header_parts = header.split() # split on whitespace
+        self.assertEqual(header_parts, expected_headers, *args, **kwargs)
+
+    def assertMutHeadersContain(
+        self,
+        filepath: str,
+        expected_headers: List[str],
+        *args, **kwargs
+        ):
+        """
+        """
+        expected_headersSet = set(expected_headers)
+        comments, mutations = self.load_mutations(filepath)
+        colnames = mutations[0].keys()
+        colnamesSet = set(colnames) # in case older versions of Python did not return a set type
+        missingWanted = expected_headersSet - colnamesSet
+        message = "Columns {} missing from mutation file".format(missingWanted)
+        self.assertEqual(len(missingWanted), 0, message, *args, **kwargs)
+        # for colname in expected_headers:
+        #     message = "Column label '{}' is missing in mutation file".format(colname)
+        #     self.assertTrue(colname in colnames, message, *args, **kwargs)
