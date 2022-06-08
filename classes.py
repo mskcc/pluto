@@ -97,3 +97,7 @@ class PrintCommand(BooleanSettingBaseClass):
 class PrintTestName(BooleanSettingBaseClass):
     def __init__(self, value: str, *args, **kwargs) -> None:
         super().__init__(value, *args, **kwargs)
+
+class SuppressStartupMessages(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
