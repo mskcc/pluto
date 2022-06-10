@@ -29,19 +29,31 @@ class SettingBaseClass(object):
 class BooleanSettingBaseClass(object):
     """
     Similar to SettingBaseClass but accepts a string value and converts it to a boolean
+    Recognizes some specific string values for direct true/false mappings, otherwise passes down to `bool()`
     """
     def __init__(self, value: str) -> None:
-        self._value = value
+        self._value = value # save the original value passed in
+        self.value = self.parse(value) # get the parsed value converted to boolean
+
+    def parse(self, value: str) -> bool:
+        """
+        Recognize a few specific strings to return pre-definied values for, otherwise use `bool()`
+        """
+        result = False # default value
         value = str(value).lower()
         if value == "true":
-            value = True
+            result = True
         elif value == "false":
-            value = False
+            result = False
+        elif value == "f":
+            result = False
         elif value == "none":
-            value = False
+            result = False
+        elif value == "0":
+            result = False
         else:
-            value = bool(value)
-        self.value = value
+            result = bool(value) # any other non-empty string values will be True here
+        return(result)
 
     def __str__(self):
         return(str(self.value))
