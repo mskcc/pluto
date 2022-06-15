@@ -1128,6 +1128,36 @@ class PlutoTestCase(unittest.TestCase):
             self.assertEqual(len(mutations), expected_num, *args, **kwargs)
             self.assertEqual(hash, expected_hash, *args, **kwargs)
 
+    def assertMutFileContains(
+        self,
+        filepath: str,
+        expected_comments: List[str],
+        expected_mutations: List[str],
+        comments_identical: bool = False,
+        mutations_identical: bool = False,
+        identical: bool = False,
+        *args, **kwargs
+        ):
+        if identical:
+            comments_identical = True
+            mutations_identical = True
+        comments, mutations = self.load_mutations(filepath)
+
+        if comments_identical:
+            self.assertEqual(expected_comments, comments)
+        else:
+            for comment in expected_comments:
+                message = "Comment '{}' is not in comments list: {}".format(comment, comments)
+                self.assertTrue(comment in comments, message, *args, **kwargs)
+
+        if mutations_identical:
+            self.assertEqual(expected_mutations, mutations)
+        else:
+            for mut in expected_mutations:
+                message = "Mutation missing from file: {}".format(mut)
+                self.assertTrue(mut in mutations, message, *args, **kwargs)
+
+
     def assertNumMutations(
         self,
         filepath: str,
