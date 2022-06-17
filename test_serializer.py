@@ -319,7 +319,7 @@ class TestSerializeCWLSubDirOutput(PlutoTestCase):
         Test case for dir output object with nested subdir
         """
         self.input = {}
-        output_json, output_dir = self.run_cwl()
+        output_json, output_dir = self.run_cwl(allow_empty_input = True)
         expected_output = {
             # /.../output/foo
             'output_dir': ODir(name = 'foo', dir = output_dir, items = [

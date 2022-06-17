@@ -40,7 +40,7 @@ except ImportError:
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
 import unittest
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 import shutil
 from pathlib import Path
 import getpass
@@ -899,6 +899,7 @@ class PlutoTestCase(unittest.TestCase):
                     ]
                 self.assertEqual(mutations, expected_mutations)
     """
+    maxDiff = None
     # global settings for all test cases in the instance
     cwl_file = None # make sure to override this in subclasses before using the runner
     runner_args = dict(
@@ -990,6 +991,7 @@ class PlutoTestCase(unittest.TestCase):
         input: Dict = None,
         cwl_file: Union[str, CWLFile] = None,
         engine: str = "cwltool", # TODO: need better handling for the default value here, try to get it from CWL_ENGINE instead
+        allow_empty_input: bool = False, # don't print a warning if we know its OK for the input dict to be empty
         *args, **kwargs) -> Tuple[Dict, str]:
         """
         Run the CWL specified for the test case
@@ -1000,8 +1002,8 @@ class PlutoTestCase(unittest.TestCase):
         if cwl_file is None:
             cwl_file = CWLFile(self.cwl_file)
 
-        # print a warning if self.input was empty
-        if not input:
+        # print a warning if self.input was empty; this is usually an oversight during test dev
+        if not input and not allow_empty_input:
             print(">>> WARNING: empty input passed to run_cwl() by test: ", self._testMethodName)
 
         # override with value passed from env var
@@ -1068,6 +1070,26 @@ class PlutoTestCase(unittest.TestCase):
         """
         lines = dicts2lines(*args, **kwargs)
         return(lines)
+
+    def mkstemp(self, dir: str = None, *args, **kwargs) -> str:
+        """
+        Make a temporary file
+        https://docs.python.org/3/library/tempfile.html#tempfile.mkstemp
+        https://stackoverflow.com/questions/38436987/python-write-in-mkstemp-file
+        """
+        if dir is None:
+            dir = self.tmpdir
+        fd, path = mkstemp(dir = dir, *args, **kwargs) # fileDescriptor, filePath
+        return(path)
+
+    def jsonDumps(self, d):
+        """
+        """
+        print(json.dumps(d, indent = 4))
+
+
+
+
 
     def assertCWLDictEqual(
         self,
@@ -1156,6 +1178,7 @@ class PlutoTestCase(unittest.TestCase):
             for mut in expected_mutations:
                 message = "Mutation missing from file: {}".format(mut)
                 self.assertTrue(mut in mutations, message, *args, **kwargs)
+
 
 
     def assertNumMutations(
