@@ -1242,7 +1242,7 @@ class PlutoTestCase(unittest.TestCase):
         colnames = mutations[0].keys()
         colnamesSet = set(colnames) # in case older versions of Python did not return a set type
         missingWanted = expected_headersSet - colnamesSet
-        message = "Columns {} missing from mutation file".format(missingWanted)
+        message = "Expected columns {} missing from mutation file".format(missingWanted)
         self.assertEqual(len(missingWanted), 0, message, *args, **kwargs)
         # for colname in expected_headers:
         #     message = "Column label '{}' is missing in mutation file".format(colname)
