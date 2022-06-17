@@ -98,9 +98,9 @@ class OFile(dict):
             self.path = self['basename'] # TODO: should this be prefixed with '/' or pwd? dont think it will actually come up in real life use cases
         self.location = location_base + self.path
 
-        if size:
+        if size != None:
             self['size'] = size
-        if hash:
+        if hash != None:
             self['checksum'] = 'sha1$' + hash
 
         self['location'] = self.location
@@ -382,7 +382,7 @@ def serialize_repr(data: Dict) -> Dict:
 
         Needs to have indentation applied and some stray " need to be removed,
         and `dir` values should be updated to use `output_dir` instead
-        
+
     """
     # convert all the entries into OFile and ODir object text representations
     new_data = {}
