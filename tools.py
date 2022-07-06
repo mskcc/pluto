@@ -1298,3 +1298,10 @@ class PlutoTestCase(unittest.TestCase):
         # for colname in expected_headers:
         #     message = "Column label '{}' is missing in mutation file".format(colname)
         #     self.assertTrue(colname in colnames, message, *args, **kwargs)
+
+    def assertFileLinesEqual(self, filepath: str, expected_lines: List[str]):
+        """
+        """
+        with open(filepath) as fin:
+            output_lines = [ line.strip() for line in fin ]
+        self.assertEqual(output_lines, expected_lines)
