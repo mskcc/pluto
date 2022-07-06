@@ -1101,6 +1101,8 @@ class PlutoTestCase(unittest.TestCase):
         _printJSON: bool = False,
         *args, **kwargs):
         """
+        Compare the JSON-style CWL output dicts
+
         wrapper around `unittest.TestCase.assertDictEqual` that can remove the keys for
         `nameext` and `nameroot`
         from dicts representing CWL cwltool / Toil JSON output
@@ -1160,6 +1162,9 @@ class PlutoTestCase(unittest.TestCase):
         identical: bool = False,
         *args, **kwargs
         ):
+        """
+        Check that mutation file contains expected header and mutation contents
+        """
         if identical:
             comments_identical = True
             mutations_identical = True
@@ -1179,6 +1184,28 @@ class PlutoTestCase(unittest.TestCase):
                 message = "Mutation missing from file: {}".format(mut)
                 self.assertTrue(mut in mutations, message, *args, **kwargs)
 
+    def assertCompareMutFiles(self,
+        filepath1: str,
+        filepath2: str,
+        muts_only: bool = False,
+        compare_len: bool = False,
+        *args, **kwargs
+        ):
+        """
+        """
+        if not muts_only:
+            comments1, mutations1 = self.load_mutations(filepath1)
+            self.assertMutFileContains(filepath = filepath2, expected_comments = comments1, expected_mutations = mutations1)
+        else:
+            _, mutations1 = self.load_mutations(filepath1)
+            self.assertMutFileContains(filepath = filepath2, expected_comments = [], expected_mutations = mutations1)
+
+        if compare_len:
+            _, mutations2 = self.load_mutations(filepath2)
+            len1 = len(mutations1)
+            len2 = len(mutations2)
+            message = "File {} has a different number of mutations from file {} ({} vs {})".format(filepath1, filepath2, len1, len2)
+            self.assertEqual(len1, len2, *args, **kwargs)
 
 
     def assertNumMutations(
@@ -1259,6 +1286,7 @@ class PlutoTestCase(unittest.TestCase):
         *args, **kwargs
         ):
         """
+        Check that mutation file headers contain expected values
         """
         expected_headersSet = set(expected_headers)
         comments, mutations = self.load_mutations(filepath)
