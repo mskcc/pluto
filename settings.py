@@ -17,7 +17,8 @@ try:
         KeepTmp,
         PrintCommand,
         PrintTestName,
-        SuppressStartupMessages
+        SuppressStartupMessages,
+        ToilStats
         )
 except ModuleNotFoundError:
     from .classes import (
@@ -28,7 +29,8 @@ except ModuleNotFoundError:
         KeepTmp,
         PrintCommand,
         PrintTestName,
-        SuppressStartupMessages
+        SuppressStartupMessages,
+        ToilStats
         )
 
 quiet_mode = SuppressStartupMessages(os.environ.get('QUIET', False))
@@ -75,6 +77,10 @@ PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', False))
 # print the name of each test before it starts running
 PRINT_TESTNAME = PrintTestName(os.environ.get('PRINT_TESTNAME', False))
 
+# save the run stats for Toil
+TOIL_STATS = ToilStats(os.environ.get('STATS', False))
+# RuntimeError: Contradicting options passed: Clean flag is set to onSuccess despite the stats flag requiring the jobStore to be intact at the end of the run. Set clean to 'never'
+
 # common args to be included in all cwltool invocations
 CWL_ARGS = [
     "--preserve-environment", "PATH",
@@ -99,21 +105,36 @@ TOIL_ARGS = [
     '--not-strict'
 ]
 
+
 # need to explictly set Toil's handling of temp dir deletions because by default it will delete all tmp dirs and we pretty much always need to keep them because otherwise its impossible to debug anything
+# default settings
+TOIL_CLEAN_SETTINGS = {
+'clean':'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
+'cleanWorkDir': 'onSuccess' # deletion of temporary worker directory # {always,onError,never,onSuccess}
+}
+
 # make sure TMP_DIR's dont get deleted if we wanted to keep tmp
 if KEEP_TMP:
+    TOIL_CLEAN_SETTINGS['clean'] = 'never'
+    TOIL_CLEAN_SETTINGS['cleanWorkDir'] = 'never'
+
+# https://toil.readthedocs.io/en/3.10.1/running/cli.html#stats saves /stats under the jobstore dir for use with `toil stats <jobstore>`
+# NOTE: `toil stats` reports memory in Kibibytes (default) or Mebibytes ("human readable")
+if TOIL_STATS:
+    TOIL_CLEAN_SETTINGS['clean'] = 'never'
+    TOIL_CLEAN_SETTINGS['cleanWorkDir'] = 'never'
     TOIL_ARGS = [
         *TOIL_ARGS,
-        '--clean', 'never', # deletion of the jobStore # {always,onError,never,onSuccess}
-        '--cleanWorkDir', 'never', # deletion of temporary worker directory # {always,onError,never,onSuccess}
-         ]
-else:
-    # use the default settings
-    TOIL_ARGS = [
-        *TOIL_ARGS,
-        '--clean', 'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
-        '--cleanWorkDir', 'onSuccess', # deletion of temporary worker directory # {always,onError,never,onSuccess}
-         ]
+        '--stats'
+        ]
+
+TOIL_ARGS = [
+    *TOIL_ARGS,
+    '--clean', TOIL_CLEAN_SETTINGS['clean'],
+    '--cleanWorkDir', TOIL_CLEAN_SETTINGS['cleanWorkDir']
+]
+
+
 
 # use LSF on the HPC to submit jobs
 if USE_LSF:
