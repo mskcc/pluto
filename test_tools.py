@@ -343,12 +343,8 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        if CWL_ENGINE.toil:
-            expected_output['output_file']['nameext'] = '.maf'
-            expected_output['output_file']['nameroot'] = 'output'
-            expected_output['output_file'].pop('path')
         expected_path = os.path.join(output_dir, 'output.maf')
-        self.assertDictEqual(output_json, expected_output)
+        self.assertCWLDictEqual(output_json, expected_output)
 
         comments, mutations = self.load_mutations(expected_path)
 
@@ -409,12 +405,8 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        if CWL_ENGINE.toil:
-            expected_output['output_file']['nameext'] = '.maf'
-            expected_output['output_file']['nameroot'] = 'output'
-            expected_output['output_file'].pop('path')
         expected_path = os.path.join(output_dir, 'output.maf')
-        self.assertDictEqual(output_json, expected_output)
+        self.assertCWLDictEqual(output_json, expected_output)
 
         comments, mutations = self.load_mutations(expected_path)
 

@@ -20,7 +20,11 @@ try:
         KEEP_TMP,
         CWL_ENGINE,
         PRINT_COMMAND,
-        PRINT_TESTNAME
+        PRINT_TESTNAME,
+        TOIL_STATS,
+        PRINT_STATS,
+        SAVE_STATS,
+        STATS_DIR
     )
     from .settings import CWL_DIR as _CWL_DIR
 except ImportError:
@@ -35,7 +39,11 @@ except ImportError:
         KEEP_TMP,
         CWL_ENGINE,
         PRINT_COMMAND,
-        PRINT_TESTNAME
+        PRINT_TESTNAME,
+        TOIL_STATS,
+        PRINT_STATS,
+        SAVE_STATS,
+        STATS_DIR
     )
     from settings import CWL_DIR as _CWL_DIR
 from collections import OrderedDict
@@ -109,7 +117,8 @@ class CWLRunner(object):
         parallel: bool = False, # run workflow jobs in parallel; NOTE: make sure all Singularity containers are cached first or it will break
         js_console: bool = False,
         print_stderr: bool = False,
-        use_cache: bool = True
+        use_cache: bool = True,
+        toil_stats: bool = None # if follow-up steps should be taken to collect Toil run stats; assumes that TOIL_ARGS has been updated for including the --stats flag which creates required output in the jobstore
         ):
         """
         Examples
@@ -143,10 +152,14 @@ class CWLRunner(object):
         self.js_console = js_console
         self.print_stderr = print_stderr
         self.use_cache = use_cache
+        self.toil_stats = toil_stats
+        self.toil_stats_dict = {}
 
         # override some settings from env vars
         if PRINT_COMMAND:
             self.print_command = PRINT_COMMAND
+        if TOIL_STATS:
+            self.toil_stats = TOIL_STATS
 
         if dir is None:
             if engine == 'cwltool':
@@ -195,7 +208,7 @@ class CWLRunner(object):
                 use_cache = self.use_cache
                 )
         elif self.engine == 'toil':
-            output_json, output_dir = run_cwl_toil(
+            output_json, output_dir, jobStore = run_cwl_toil(
                 input_data = self.input,
                 cwl_file = self.cwl_file,
                 run_dir = self.dir,
@@ -206,6 +219,9 @@ class CWLRunner(object):
                 input_is_file = self.input_is_file,
                 testcase = self.testcase
                 )
+            # NOTE: returned jobStore may be different from self.jobStore if self.jobStore was never passed to runner during init
+            if self.toil_stats:
+                self.toil_stats_dict = self.get_toil_stats(jobStore)
         else:
             # TODO: what should we do in the case where the engine doesnt match one of the above??
             # This should probably raise an error
@@ -215,6 +231,23 @@ class CWLRunner(object):
         with open(output_json_file, "w") as fout:
             json.dump(output_json, fout, indent = 4)
         return(output_json, output_dir, output_json_file)
+
+    def get_toil_stats(self, jobStore: str) -> Dict:
+        """
+        # NOTE: `toil stats` reports memory in Kibibytes (default) or Mebibytes ("human readable")
+        """
+        command = ["toil", "stats", "--raw", jobStore]
+        returncode, proc_stdout, proc_stderr = run_command(command)
+        stats = json.loads(proc_stdout)
+        return(stats)
+
+    # def format_toil_stats(self):
+    #     d = {
+    #     'total_run_time': self.toil_stats_dict.get('total_run_time'),
+    #     }
+    #     if self.toil_stats_dict.get('worker'):
+    #         d['total_number'] = self.toil_stats_dict['worker'].get('total_number')
+
 
 
 
@@ -367,7 +400,7 @@ def run_cwl_toil(
         print_stdout: bool = False,
         print_stderr: bool = False,
         check_returncode: bool = True # requires testcase instance to be passed as well
-        ) -> Tuple[Dict, str]:
+        ) -> Tuple[Dict, str, str]: # [outputDict, outputDirPath]
     """
     Run a CWL using Toil
     """
@@ -461,7 +494,7 @@ def run_cwl_toil(
 
     try:
         output_data = json.loads(proc_stdout)
-        return(output_data, output_dir)
+        return(output_data, output_dir, jobStore)
 
     # if you cant decode the JSON stdout then it did not finish correctly
     except json.decoder.JSONDecodeError:
@@ -1022,6 +1055,19 @@ class PlutoTestCase(unittest.TestCase):
             # leave_tmpdir = self.leave_tmpdir,
             # leave_outputs = self.leave_outputs
         output_json, output_dir, output_json_file = runner.run()
+
+        # if Toil run stats were retrieved, either save or print them as requested
+        if runner.toil_stats_dict:
+            if PRINT_STATS:
+                print("\n>>> {} stats:\n{}".format(self.test_label, runner.toil_stats_dict)) # runner.format_toil_stats
+
+            if SAVE_STATS:
+                Path(STATS_DIR).mkdir(parents=True, exist_ok=True)
+                filename = "{}.json".format(self.test_label)
+                stats_output_file = os.path.join(STATS_DIR, filename)
+                with open(stats_output_file, "w") as fout:
+                    json.dump(runner.toil_stats_dict, fout, indent = 4)
+
         return(output_json, output_dir)
 
     def run_command(self, *args, **kwargs) -> Tuple[int, str, str]:

@@ -32,5 +32,6 @@ bash:
 test:
 	python3 test_tools.py
 	python3 test_serializer.py
-	CWL_ENGINE=toil python3 test_tools.py
+	python3 test_classes.py
+	CWL_ENGINE=toil PRINT_TESTNAME=T PRINT_COMMAND=T PRINT_STATS=T python3 test_tools.py
 	CWL_ENGINE=toil python3 test_serializer.py

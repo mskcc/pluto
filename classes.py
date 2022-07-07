@@ -117,3 +117,11 @@ class SuppressStartupMessages(BooleanSettingBaseClass):
 class ToilStats(BooleanSettingBaseClass):
     def __init__(self, value: str, *args, **kwargs) -> None:
         super().__init__(value, *args, **kwargs)
+
+class PrintToilStats(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
+
+class SaveToilStats(BooleanSettingBaseClass):
+    def __init__(self, value: str, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)

@@ -18,7 +18,9 @@ try:
         PrintCommand,
         PrintTestName,
         SuppressStartupMessages,
-        ToilStats
+        ToilStats,
+        PrintToilStats,
+        SaveToilStats
         )
 except ModuleNotFoundError:
     from .classes import (
@@ -30,7 +32,9 @@ except ModuleNotFoundError:
         PrintCommand,
         PrintTestName,
         SuppressStartupMessages,
-        ToilStats
+        ToilStats,
+        PrintToilStats,
+        SaveToilStats
         )
 
 quiet_mode = SuppressStartupMessages(os.environ.get('QUIET', False))
@@ -77,9 +81,20 @@ PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', False))
 # print the name of each test before it starts running
 PRINT_TESTNAME = PrintTestName(os.environ.get('PRINT_TESTNAME', False))
 
-# save the run stats for Toil
+# retrieve the run stats for Toil
 TOIL_STATS = ToilStats(os.environ.get('STATS', False))
-# RuntimeError: Contradicting options passed: Clean flag is set to onSuccess despite the stats flag requiring the jobStore to be intact at the end of the run. Set clean to 'never'
+
+PRINT_STATS = PrintToilStats(os.environ.get('PRINT_STATS', False))
+
+SAVE_STATS = SaveToilStats(os.environ.get('SAVE_STATS', False))
+
+# dir to save stats files in
+STATS_DIR = os.environ.get("STATS_DIR", None)
+if not STATS_DIR:
+    STATS_DIR = os.path.join(os.getcwd(), "stats")
+
+if PRINT_STATS or SAVE_STATS:
+    TOIL_STATS.value = True
 
 # common args to be included in all cwltool invocations
 CWL_ARGS = [
@@ -109,8 +124,8 @@ TOIL_ARGS = [
 # need to explictly set Toil's handling of temp dir deletions because by default it will delete all tmp dirs and we pretty much always need to keep them because otherwise its impossible to debug anything
 # default settings
 TOIL_CLEAN_SETTINGS = {
-'clean':'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
-'cleanWorkDir': 'onSuccess' # deletion of temporary worker directory # {always,onError,never,onSuccess}
+    'clean':'onSuccess', # deletion of the jobStore # {always,onError,never,onSuccess}
+    'cleanWorkDir': 'onSuccess' # deletion of temporary worker directory # {always,onError,never,onSuccess}
 }
 
 # make sure TMP_DIR's dont get deleted if we wanted to keep tmp
