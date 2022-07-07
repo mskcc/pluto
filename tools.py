@@ -1028,6 +1028,8 @@ class PlutoTestCase(unittest.TestCase):
         *args, **kwargs) -> Tuple[Dict, str]:
         """
         Run the CWL specified for the test case
+
+        NOTE: Make sure to only call this one time per test case!! Otherwise jobstore dirs may persist and break subsequent runs
         """
         # set default values
         if input is None:
@@ -1037,11 +1039,17 @@ class PlutoTestCase(unittest.TestCase):
 
         # print a warning if self.input was empty; this is usually an oversight during test dev
         if not input and not allow_empty_input:
-            print(">>> WARNING: empty input passed to run_cwl() by test: ", self._testMethodName)
+            print(">>> WARNING: empty input passed to run_cwl() by test: ", self.test_label)
 
         # override with value passed from env var
         if CWL_ENGINE != engine:
             engine = CWL_ENGINE
+
+        # save a file to the run dir to mark that this test has started running
+        filename = "{}.run".format(self.test_label)
+        run_marker_file = os.path.join(self.tmpdir, filename)
+        with open(run_marker_file, "w") as fout:
+            fout.write(str(self.start_time))
 
         runner = CWLRunner(
             cwl_file = cwl_file,
