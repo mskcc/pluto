@@ -1353,6 +1353,21 @@ class PlutoTestCase(unittest.TestCase):
         #     message = "Column label '{}' is missing in mutation file".format(colname)
         #     self.assertTrue(colname in colnames, message, *args, **kwargs)
 
+    def assertMutHeadersAllowed(
+        self,
+        filepath: str,
+        allowed_headers: List[str],
+        *args, **kwargs
+        ):
+        """
+        Check that only allowed header columns are present in the mutation file
+        """
+        comments, mutations = self.load_mutations(filepath)
+        colnames = mutations[0].keys()
+        for key in mutations[0].keys():
+            message = "Columns {} not allowed in mutation file".format(key)
+            self.assertTrue(key in allowed_headers, message, *args, **kwargs)
+
     def assertFileLinesEqual(self, filepath: str, expected_lines: List[str]):
         """
         """
