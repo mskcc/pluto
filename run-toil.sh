@@ -56,10 +56,14 @@ DEFAULT_RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
 RUN_DIR="${RUN_DIR:-$DEFAULT_RUN_DIR}"
 # RUN_DIR="${PWD}/toil_runs/${TIMESTAMP}"
 
+DEFAULT_TMP_DIR="${RUN_DIR}/tmp"
+TMP_DIR="${TMP_DIR:-$DEFAULT_TMP_DIR}"
+
+DEFAULT_WORK_DIR="${RUN_DIR}/work"
+WORK_DIR="${WORK_DIR:-$DEFAULT_WORK_DIR}"
+
 LOG_DIR="${RUN_DIR}/logs"
 OUTPUT_DIR="${RUN_DIR}/output"
-TMP_DIR="${RUN_DIR}/tmp"
-WORK_DIR="${RUN_DIR}/work"
 JOB_STORE="${RUN_DIR}/jobstore"
 STDOUT_LOG_FILE="${RUN_DIR}/stdout.log"
 LOG_FILE="${RUN_DIR}/toil.log"
@@ -72,6 +76,8 @@ EXIT_CODE_FILE="${RUN_DIR}/exit_code"
 PID_FILE="${RUN_DIR}/pid"
 HOST_FILE="${RUN_DIR}/hostname"
 TOIL_VERSION_FILE="${RUN_DIR}/toil_version"
+STATS_JSON="${RUN_DIR}/stats.json"
+CLUSTERSTATS_JSON="${RUN_DIR}/clusterstats.json"
 
 
 # avoid race condition where two run-toil.sh scripts start at the same time;
@@ -135,6 +141,14 @@ else
     LSF_COMMAND=""
 fi
 
+# env var to run with stats
+STATS="${STATS:-}"
+if [ "${STATS}" != "False" ] ; then
+    STATS_COMMAND=" --cleanWorkDir never --clean never  --stats "
+else
+    STATS_COMMAND=" --cleanWorkDir onSuccess --clean onSuccess "
+fi
+
 # run in background subprocess so we can capture the set -x stderr message showing the full command executed
 # capture the exit code for the pipeline when its done
 # NOTE: try to mimic most of the args used here; https://github.com/mskcc/ridgeback/blob/ae51a1a38e8247e3ff1bd1c0791ba4515f9dc6c3/submitter/toil_submitter/toil_jobsubmitter.py#L209-L254
@@ -156,8 +170,6 @@ PATH TMPDIR TOIL_LSF_ARGS SINGULARITY_PULLDIR SINGULARITY_CACHEDIR \
 SINGULARITYENV_LC_ALL PWD  SINGULARITY_DOCKER_USERNAME SINGULARITY_DOCKER_PASSWORD \
 --statePollingWait 10 \
 --maxLocalJobs 100 \
---cleanWorkDir onSuccess \
---clean onSuccess \
 --doubleMem \
 --defaultMemory 8G \
 --maxCores 16 \
@@ -166,7 +178,8 @@ SINGULARITYENV_LC_ALL PWD  SINGULARITY_DOCKER_USERNAME SINGULARITY_DOCKER_PASSWO
 --not-strict \
 --coalesceStatusCalls \
 --writeLogs "${LOG_DIR}" \
---realTimeLogging \
+--clusterStats "${CLUSTERSTATS_JSON}" \
+--realTimeLogging $STATS_COMMAND \
 $@ ) 2>&1 | tee "${STDOUT_LOG_FILE}" ; exit_code="$?"
 
 set +x
@@ -183,6 +196,14 @@ fi
 # record time stop and final exit code
 date +%s > "${TIMESTOP_FILE}"
 echo "${exit_code}" > "${EXIT_CODE_FILE}"
+
+# try to get some toil stats that should have been saved
+if [ "${STATS}" != "" ]; then
+  toil stats --raw "${JOB_STORE}" > "${STATS_JSON}"
+  rm -rf "${JOB_STORE}"
+  rm -rf "${TMP_DIR}"
+  rm -rf "${WORK_DIR}"
+fi
 
 # re-raise the pipeline exit code
 exit $exit_code
@@ -213,3 +234,29 @@ exit $exit_code
 # if we are not restarting, jobStore should not already exist
 # --restart --jobStore "${JOB_STORE}" \
 # if we are restarting, jobStore needs to exist
+
+# --stats               Records statistics about the toil workflow to be used
+#                       by 'toil stats'.
+# --clean {always,onError,never,onSuccess}
+#                       Determines the deletion of the jobStore upon
+#                       completion of the program. Choices: ['always',
+#                       'onError', 'never', 'onSuccess']. The --stats option
+#                       requires information from the jobStore upon completion
+#                       so the jobStore will never be deleted with that flag.
+#                       If you wish to be able to restart the run, choose
+#                       'never' or 'onSuccess'. Default is 'never' if stats is
+#                       enabled, and 'onSuccess' otherwise.
+# --cleanWorkDir {always,onError,never,onSuccess}
+#                       Determines deletion of temporary worker directory upon
+#                       completion of a job. Choices: ['always', 'onError',
+#                       'never', 'onSuccess']. Default = always. WARNING: This
+#                       option should be changed for debugging only. Running a
+#                       full pipeline with this option could fill your disk
+#                       with excessive intermediate data.
+# --clusterStats [CLUSTERSTATS]
+#                       If enabled, writes out JSON resource usage statistics
+#                       to a file. The default location for this file is the
+#                       current working directory, but an absolute path can
+#                       also be passed to specify where this file should be
+#                       written. This options only applies when using scalable
+#                       batch systems.
