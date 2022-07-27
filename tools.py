@@ -1333,6 +1333,44 @@ class PlutoTestCase(unittest.TestCase):
         header_parts = header.split() # split on whitespace
         self.assertEqual(header_parts, expected_headers, *args, **kwargs)
 
+    def assertPortalCommentsEquals(
+        self,
+        filepath: str,
+        expected_comments: List[List[str]],
+        ignoreOrder: bool = False,
+        *args, **kwargs
+        ):
+        """
+        """
+        table_reader = TableReader(filepath)
+        comments = table_reader.comment_lines # list of strings that looks like this; [ '#Header1\tHeader\n', ... ]
+        # fieldnames = table_reader.get_fieldnames()
+        # records = [ rec for rec in table_reader.read() ]
+        comment_parts = []
+        for comment in comments:
+            comment = comment.lstrip("#")
+            parts = comment.split()
+            comment_parts.append(parts)
+
+        # exact comparison
+        if not ignoreOrder:
+            message = "comment_parts are not the same as expected_comments"
+            self.assertEqual(comment_parts, expected_comments, message)
+
+        # compare irrespective of order of columns\
+        # NOTE: maybe do not use this because it makes it impossible to enforce the contents of the file ... hmm...
+        else:
+            # TODO: consider making this a set operation
+            message = "len comment_parts ({}) not equal to len expected_comments ({})".format(len(comment_parts), len(expected_comments))
+            self.assertEqual(len(comment_parts), len(expected_comments), message)
+            for i, _ in enumerate(expected_comments):
+                message = "len comment_parts ({}) not equal to len expected_comments ({})".format(len(comment_parts), len(expected_comments))
+                self.assertEqual(len(comment_parts[i]), len(expected_comments[i]), message)
+            for i, comments in enumerate(expected_comments):
+                for comment in comments:
+                    message = "comment {} not in comment_parts".format(comment)
+                    self.assertTrue(comment in comment_parts[i], message)
+
     def assertMutHeadersContain(
         self,
         filepath: str,
@@ -1374,3 +1412,22 @@ class PlutoTestCase(unittest.TestCase):
         with open(filepath) as fin:
             output_lines = [ line.strip() for line in fin ]
         self.assertEqual(output_lines, expected_lines)
+
+    def assertSampleValues(
+        self,
+        filepath: str,
+        expected_values: Dict,
+        value_fieldname: str,
+        sample_fieldname: str = "SAMPLE_ID"
+        ):
+        """
+        Check that samples in the file have expected values
+        Assumes samples are unique
+        """
+        table_reader = TableReader(filepath)
+        records = [ rec for rec in table_reader.read() ]
+        values = {}
+        for record in records:
+            sample_id = record['SAMPLE_ID']
+            values[sample_id] = record[value_fieldname]
+        self.assertDictEqual(values, expected_values)
