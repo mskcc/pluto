@@ -1338,6 +1338,7 @@ class PlutoTestCase(unittest.TestCase):
         filepath: str,
         expected_comments: List[List[str]],
         ignoreOrder: bool = False,
+        transpose: bool = False,
         *args, **kwargs
         ):
         """
@@ -1351,6 +1352,10 @@ class PlutoTestCase(unittest.TestCase):
             comment = comment.lstrip("#")
             parts = comment.split()
             comment_parts.append(parts)
+
+        # use this to make viewing the diff easier
+        if transpose:
+            comment_parts = list(map(list, zip(*comment_parts)))
 
         # exact comparison
         if not ignoreOrder:
