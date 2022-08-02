@@ -156,7 +156,7 @@ fi
 # --writeLogs "${LOG_DIR}" \
 # --realTimeLogging \
 # --coalesceStatusCalls \ # TODO: Get this working!! it greatly reduces size of logs but it broke on some dev Toil branches
-( toil-cwl-runner \
+( nice toil-cwl-runner \
 --logFile "${LOG_FILE}" \
 --outdir "${OUTPUT_DIR}" \
 --workDir "${WORK_DIR}" \
