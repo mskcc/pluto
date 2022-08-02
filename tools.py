@@ -1141,9 +1141,23 @@ class PlutoTestCase(unittest.TestCase):
         """
         print(json.dumps(d, indent = 4))
 
-
-
-
+    def getAllSampleFileValues(
+        self,
+        filepaths: List[str], # list of tables to read values from
+        value_fieldname: str, # field in each table to read values from
+        sample_fieldname: str = "SAMPLE_ID" # field in each table to read sample ID from
+        ) -> Dict:
+        """
+        Collect the values from a list of filepaths for a value per sample and return a single dict with all samples' values
+        """
+        values = {}
+        for filepath in filepaths:
+            table_reader = TableReader(filepath)
+            records = [ rec for rec in table_reader.read() ]
+            for record in records:
+                sample_id = record[sample_fieldname]
+                values[sample_id] = record[value_fieldname]
+        return(values)
 
     def assertCWLDictEqual(
         self,
@@ -1433,6 +1447,6 @@ class PlutoTestCase(unittest.TestCase):
         records = [ rec for rec in table_reader.read() ]
         values = {}
         for record in records:
-            sample_id = record['SAMPLE_ID']
+            sample_id = record[sample_fieldname]
             values[sample_id] = record[value_fieldname]
         self.assertDictEqual(values, expected_values)
