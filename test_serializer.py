@@ -30,6 +30,35 @@ class TestSerializer(PlutoTestCase):
         }
         self.assertDictEqual(obj, expected)
 
+    def test_cwl_secondaryFiles1(self):
+        obj = OFile(
+            size = 488,
+            name = 'Sample4_purity.seg',
+            dir = '/tmp/foo',
+            hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c',
+            secondaryFiles = [OFile(name = 'Sample4_purity.seg.tbi', hash = "1234abcd", size = 1, dir = '/tmp/foo')])
+
+        expected = {
+            'basename': 'Sample4_purity.seg',
+            'checksum': 'sha1$e6df130c57ca594578f9658e589cfafc8f40a56c',
+            'class': 'File',
+            'location': 'file:///tmp/foo/Sample4_purity.seg',
+            'path': '/tmp/foo/Sample4_purity.seg',
+            'size': 488,
+            'secondaryFiles': [
+                {
+                'class': 'File',
+                'basename': 'Sample4_purity.seg.tbi',
+                'checksum': 'sha1$1234abcd',
+                'location': 'file:///tmp/foo/Sample4_purity.seg.tbi',
+                'path': '/tmp/foo/Sample4_purity.seg.tbi',
+                'size': 1
+                }
+            ]
+        }
+
+        self.assertDictEqual(obj, expected)
+
     def test_cwl_file2(self):
         """
         Test case with no 'dir' arg used for OFile; should output just the basename for path
@@ -272,6 +301,32 @@ class TestSerializeCWLOutput(PlutoTestCase):
             'output_file': OFile(size = 12, name = 'output.maf', dir = output_dir, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e')
             }
         self.assertCWLDictEqual(output_json, expected_output)
+
+class TestSerializeCWLOutput2(PlutoTestCase):
+    CWL_DIR = os.path.abspath('cwl')
+    cwl_file = CWLFile('create_secondaryFiles.cwl', CWL_DIR = CWL_DIR)
+
+    def test_make_secondaryFiles(self):
+        lines = [
+            ['# comment 1']
+        ]
+        input = self.write_table(tmpdir = self.tmpdir, filename = 'input.maf', lines = lines)
+        self.input = {
+            "input_file": {
+                  "class": "File",
+                  "path": input
+                },
+            "secondaryFilename":  'input.maf.tbi',
+            }
+        output_json, output_dir = self.run_cwl()
+
+        expected_output = {
+            'output_file': OFile(size = 12, name = 'input.maf', dir = output_dir, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e', secondaryFiles = [
+                OFile(name = "input.maf.tbi", dir = output_dir, hash = 'da39a3ee5e6b4b0d3255bfef95601890afd80709', size = 0)
+            ])
+            }
+        self.assertCWLDictEqual(output_json, expected_output)
+
 
 
 class TestSerializeCWLDirOutput(PlutoTestCase):

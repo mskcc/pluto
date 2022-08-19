@@ -85,6 +85,7 @@ class OFile(dict):
         dir: str = None, # the parent dir path if OFile is **not** in a workflow subdir
         size: int = None, # the size of the file in bytes
         hash: str = None, # the sha1 hash of the file
+        secondaryFiles: List[OFile] = None,
         location_base: str = 'file://',
         class_label: str = 'File'
         ):
@@ -102,6 +103,11 @@ class OFile(dict):
             self['size'] = size
         if hash != None:
             self['checksum'] = 'sha1$' + hash
+
+        if secondaryFiles != None:
+            self['secondaryFiles'] = []
+            for ofile in secondaryFiles:
+                self['secondaryFiles'].append(ofile)
 
         self['location'] = self.location
         self['path'] = self.path
