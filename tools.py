@@ -326,7 +326,7 @@ def run_cwl(
         if not input_json_file:
             input_json_file = os.path.join(tmpdir, "input.json")
         with open(input_json_file, "w") as json_out:
-            json.dump(input_json, json_out)
+            json.dump(input_json, json_out, indent = 4)
     else:
         # input_json is a pre-existing JSON file
         input_json_file = input_json
@@ -438,7 +438,7 @@ def run_cwl_toil(
             input_json_file = os.path.join(run_dir, "input.json")
         # dump input data to JSON file
         with open(input_json_file, "w") as json_out:
-            json.dump(input_data, json_out)
+            json.dump(input_data, json_out, indent = 4)
     else:
         # input_json is a pre-existing JSON file
         input_json_file = input_data
