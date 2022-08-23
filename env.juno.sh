@@ -13,6 +13,13 @@ case $arg in
         module load cwl/cwltool
         ;;
 
+    toil)
+        module load singularity/3.3.0
+        export PATH=${PWD}/conda/bin:${PWD}/bin:${PATH}
+        unset PYTHONPATH
+        unset PYTHONHOME
+        ;;
+
     *)
         echo "unrecognized target called"
         # exit 1

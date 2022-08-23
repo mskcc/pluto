@@ -10,10 +10,12 @@ import shutil
 
 # relative imports, from CLI and from parent project
 if __name__ != "__main__":
-    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from .tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter, clean_dicts
+    from .settings import CWL_ENGINE
 
 if __name__ == "__main__":
-    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter
+    from tools import md5_file, md5_obj, PlutoTestCase, CWLFile, TableReader, write_table, load_mutations, dicts2lines, MafWriter, clean_dicts
+    from settings import CWL_ENGINE
 
 class TestMd5(unittest.TestCase):
     def test_md5_file(self):
@@ -341,9 +343,10 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        self.assertDictEqual(output_json, expected_output)
+        expected_path = os.path.join(output_dir, 'output.maf')
+        self.assertCWLDictEqual(output_json, expected_output)
 
-        comments, mutations = self.load_mutations(output_json['output_file']['path'])
+        comments, mutations = self.load_mutations(expected_path)
 
         expected_comments = ['# comment 1', '# comment 2']
         self.assertEqual(comments, expected_comments)
@@ -402,15 +405,228 @@ class TestCopyCWL(PlutoTestCase):
                 'path': os.path.join(output_dir, 'output.maf')
                 }
             }
-        self.assertDictEqual(output_json, expected_output)
+        expected_path = os.path.join(output_dir, 'output.maf')
+        self.assertCWLDictEqual(output_json, expected_output)
 
-        comments, mutations = self.load_mutations(output_json['output_file']['path'])
+        comments, mutations = self.load_mutations(expected_path)
 
         expected_comments = ['# comment 1', '# comment 2']
         self.assertEqual(comments, expected_comments)
 
         expected_mutations = [ maf_row1, maf_row2 ]
         self.assertEqual(mutations, expected_mutations)
+
+class TestCleanDicts(PlutoTestCase):
+    def test_clean_keys_from_dict(self):
+        """
+        Test case for scrubbing certain keys from a single dict
+        """
+        # simple case of dict with no nesting
+        d = {'a':1}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameext': "foo"}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameext': "foo", 'nameroot':'bar'}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'nameroot':'bar'}
+        expected = {'a':1}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # dict that has nested dict of dict values
+        d = {'a':1, 'b':{'c':1}}
+        expected = {'a':1, 'b':{'c':1}}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':{'c':1, 'nameext': "foo", 'nameroot':'bar'}}
+        expected = {'a':1, 'b':{'c':1}}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # dict that has nested list of dict values
+        d = {'a':1, 'b':[{'c':1}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':[{'c':1, 'nameext': "foo"}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        d = {'a':1, 'b':[{'c':1, 'nameroot': "foo"}]}
+        expected = {'a':1, 'b':[{'c':1}]}
+        clean_dicts(d)
+        self.assertDictEqual(d, expected)
+
+        # list of dicts with nested values
+        l = [{'a':1, 'nameroot':'bar'}, {'a':1, 'nameext':'foo'}]
+        expected = [{'a':1}, {'a':1}]
+        clean_dicts(l)
+        self.assertEqual(l, expected)
+
+        l = [123, {'a':1, 'nameroot':'bar'}, {'a':1, 'c':[{'d':1, 'nameroot':'bar'}]}]
+        expected = [123, {'a':1}, {'a':1, 'c':[{'d':1}]}]
+        clean_dicts(l)
+        self.assertEqual(l, expected)
+
+    def test_clean_related_keys_from_dict1(self):
+        """
+        Remove some dict keys if a given key matches a given value
+        This mimics known CWL output formats
+        where we need to remove 'size' and 'checksum' on files such as .html
+        because they often contain things like embedded timestamps, etc., that make it
+        difficult to test against because sizes and checksums fluctute with repeated generation
+        """
+        d = {'basename': "report.html", "class": "File", 'size': "1", "checksum": "foobar"}
+        related_keys = [('basename', "report.html", ['size', 'checksum'])]
+        expected = {'basename': "report.html", "class": "File"}
+        clean_dicts(d, related_keys = related_keys)
+        self.assertDictEqual(d, expected)
+
+    def test_clean_related_keys_from_dict2(self):
+        """
+        The same as test_clean_related_keys_from_dict1 but this time with a more complicated
+        real-life format of CWL output with nested dir listings
+        """
+        d = {
+        "output_dir": {
+            "class": "Directory",
+            "location": "/foo/bar/output",
+            "basename": "output",
+            "listing":[
+                {"class": "File", "basename": "report.html", "size": "1", "checksum": "foobarhash"},
+                {"class": "File", "basename": "samples.txt", "size": "2", "checksum": "foobarhash2"},
+                {"class": "Directory", "basename": "more_reports", "location": "/foo/bar/output/more_reports", "listing":[
+                    {"class": "File", "basename": "igv_report1.html", "size": "3", "checksum": "foobarhash3"}
+                ]}
+                ]
+            },
+        "mutations_file": {
+            "class": "File", "basename": "mutations.txt", "size": "4", "checksum": "foobarhash4", 'nameext': ".txt", 'nameroot':'mutations'
+            }
+        }
+        expected = {
+        "output_dir": {
+            "class": "Directory",
+            "location": "/foo/bar/output",
+            "basename": "output",
+            "listing":[
+                {"class": "File", "basename": "report.html"}, # , "size": "1", "checksum": "foobarhash"
+                {"class": "File", "basename": "samples.txt", "size": "2", "checksum": "foobarhash2"},
+                {"class": "Directory", "basename": "more_reports", "location": "/foo/bar/output/more_reports", "listing":[
+                    {"class": "File", "basename": "igv_report1.html"} # , "size": "3", "checksum": "foobarhash3"
+                ]}
+                ]
+            },
+        "mutations_file": {"class": "File", "basename": "mutations.txt", "size": "4", "checksum": "foobarhash4"} # , 'nameext': ".txt", 'nameroot':'mutations'
+        }
+        related_keys = [
+            ('basename', "report.html", ['size', 'checksum']),
+            ('basename', "igv_report1.html", ['size', 'checksum'])
+            ]
+        clean_dicts(d, related_keys = related_keys)
+        self.maxDiff = None
+        self.assertDictEqual(d, expected)
+
+
+class TestPlutoTestCase(PlutoTestCase):
+    def test_assertCWLDictEqual(self):
+        """
+        Test that CWL output dict objects have their keys stripped down to remove inconsistent output fields
+        Basic test cases
+        """
+        d1 = {'a':1, 'nameext': "foo", 'nameroot':'bar'}
+        d2 = {'a':1}
+        self.assertCWLDictEqual(d1, d2)
+
+        d1 = {'a':1, 'b':[{'c':1, 'nameext': "foo"}]}
+        d2 = {'a':1, 'b':[{'c':1}]}
+        self.assertCWLDictEqual(d1, d2)
+
+        d1 = {'a':1, 'nameroot':'bar', 'b':[{'c':1, 'nameext': "foo"}, {'d':2}]}
+        d2 = {'a':1, 'b':[{'c':1}, {'d':2}]}
+        self.assertCWLDictEqual(d1, d2)
+
+    def test_assertCWLDictEqual_1(self):
+        """
+        Test cases with more complicated CWL output objects
+        """
+        self.maxDiff = None
+        output_file = "foo.txt"
+        output_path = os.path.join(self.tmpdir, output_file)
+        d1 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12',
+                'size': 114008492,
+                'nameext': 'txt', # this gets removed by default
+                'nameroot': 'foo', # this gets removed by default
+                'path':  output_path
+                }
+            }
+        d2 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'path':  output_path,
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12',
+                'size': 114008492
+                }
+            }
+        self.assertCWLDictEqual(d1, d2)
+
+    def test_assertCWLDictEqual_related_keys(self):
+        """
+        Test cases with removal of related keys
+        Use "related_keys" to strip some dict fields but only in the presence of other fields
+        Real World Use Case: some files have inconsistent size and checksum due to embedded timestamps, etc.,
+        so need need to strip those off when doing comparisons
+        """
+        self.maxDiff = None
+        output_file = "foo.txt"
+        output_path = os.path.join(self.tmpdir, output_file)
+
+        # in each dict, if basename == output_file, then remove fields size, checksum
+        related_keys = [('basename', output_file, ['size', 'checksum'])]
+
+        d1 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'checksum': 'sha1$2513c14c720e9e1ba02bb4a61fe0f31a80f60d12', # this gets removed by related_keys
+                'size': 114008492, # this gets removed by related_keys
+                'nameext': 'txt', # this gets removed by default
+                'nameroot': 'foo', # this gets removed by default
+                'path':  output_path
+                }
+            }
+        d2 = {
+            'output_file': {
+                'location': 'file://' + output_path,
+                'basename': output_file,
+                'class': 'File',
+                'path':  output_path,
+                }
+            }
+
+        self.assertCWLDictEqual(d1, d2, related_keys = related_keys)
+
+
 
 if __name__ == "__main__":
     unittest.main()
