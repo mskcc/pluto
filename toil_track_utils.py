@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Track commandline status of toil jobs
 """
