@@ -9,3 +9,4 @@ foo/
 *.maf
 tmp/
 stats/
+unlogger/unlogger
