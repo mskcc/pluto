@@ -1332,6 +1332,32 @@ class PlutoTestCase(unittest.TestCase):
             unwantedValues = allValues - wantedValuesSet
             message = "got unwanted values in field {}: {} : wanted values: {}".format(fieldname, unwantedValues, wantedValuesSet)
             self.assertEqual(len(unwantedValues), 0, message, *args, **kwargs)
+    
+    def assertMutFieldDoesntContain(
+        self,
+        filepath: str,
+        fieldname: str,
+        values: List[str],
+        *args, **kwargs
+        ):
+        """
+        """
+        unwantedValues = set(values)
+        comments, mutations = self.load_mutations(filepath)
+        allValues = set()
+        for mut in mutations:
+            allValues.add(mut[fieldname])
+
+        presentValues = []
+        for value in unwantedValues:
+            if value in allValues:
+                presentValues.append(value)
+        
+        wanted = []
+        message = "got unwanted values {} in field {}".format(presentValues, fieldname)
+        self.assertEqual(wanted, presentValues, message, *args, **kwargs)
+
+
 
     def assertHeaderEquals(
         self,
