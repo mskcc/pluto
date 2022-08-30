@@ -8,11 +8,10 @@ import unittest
 import shutil
 import json
 from serializer import OFile, ODir
-
-if __name__ != "__main__":
-    from .tools import PlutoTestCase, CWLFile
-if __name__ == "__main__":
-    from tools import PlutoTestCase, CWLFile
+from tools import (
+        PlutoTestCase, 
+        CWLFile
+    )
 
 class TestSerializer(PlutoTestCase):
     def test_cwl_file1(self):
@@ -140,134 +139,6 @@ class TestSerializer(PlutoTestCase):
         self.maxDiff = None
         self.assertDictEqual(_dir, expected)
 
-    def test_assertCWLDictEqual(self):
-        """
-        Test that the assertCWLDictEqual method works with serialized objects
-        """
-        # test single File output
-        obj = OFile(size = 488, name = 'Sample4_purity.seg', dir = '/tmp/foo', hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c')
-        expected = {
-            'basename': 'Sample4_purity.seg',
-            'checksum': 'sha1$e6df130c57ca594578f9658e589cfafc8f40a56c',
-            'class': 'File',
-            'location': 'file:///tmp/foo/Sample4_purity.seg',
-            'path': '/tmp/foo/Sample4_purity.seg',
-            'size': 488,
-            'nameext' : '.seg',
-            'nameroot' : 'Sample4_purity'
-        }
-        self.assertCWLDictEqual(obj, expected)
-
-        # test nested Dir with File output
-        _file = OFile(size = 488, name = 'Sample4_purity.seg', hash = 'e6df130c57ca594578f9658e589cfafc8f40a56c')
-        _dir = ODir(name = 'portal', dir = self.tmpdir, items = [_file])
-        expected = {
-            'basename': 'portal',
-            'class': 'Directory',
-            'location': 'file://'+ os.path.join(self.tmpdir, 'portal'),
-            'path': os.path.join(self.tmpdir, 'portal'),
-            'nameext' : '',
-            'nameroot' : 'portal',
-            'listing': [
-                {
-                'basename': 'Sample4_purity.seg',
-                'checksum': 'sha1$e6df130c57ca594578f9658e589cfafc8f40a56c',
-                'class': 'File',
-                'location': 'file://' + os.path.join(self.tmpdir, 'portal/Sample4_purity.seg'),
-                'path': os.path.join(self.tmpdir, 'portal/Sample4_purity.seg'),
-                'size': 488,
-                'nameext' : '.seg',
-                'nameroot' : 'Sample4_purity'
-                }
-            ]
-        }
-        self.assertCWLDictEqual(_dir, expected)
-
-    def test_assertCWLDictEqual_related1(self):
-        """
-        Test that values with different "related" key fields don't break the test case
-        because they should get removed prior to comparing the dicts
-        This is for items like html files, where size and hash can be different on repeated runs
-        due to things like embedded timestamps
-        """
-        # test nested Dir and Files with some items that need extra fields cleaned
-        # using the default setting for this case
-        _file = OFile(size = 123, name = 'sample.txt', hash = 'samplehash1')
-        _report = OFile(size = 456, name = 'report.html', hash = 'foo1')
-        _dir = ODir(name = 'output', dir = self.tmpdir, items = [_file, _report])
-        expected = {
-            'basename': 'output',
-            'class': 'Directory',
-            'location': 'file://'+ os.path.join(self.tmpdir, 'output'),
-            'path': os.path.join(self.tmpdir, 'output'),
-            'nameext' : '',
-            'nameroot' : 'output',
-            'listing': [
-                {
-                'basename': 'sample.txt',
-                'checksum': 'sha1$samplehash1',
-                'class': 'File',
-                'location': 'file://' + os.path.join(self.tmpdir, 'output/sample.txt'),
-                'path': os.path.join(self.tmpdir, 'output/sample.txt'),
-                'size': 123,
-                'nameext' : '.txt',
-                'nameroot' : 'sample'
-                },
-                {
-                'basename': 'report.html',
-                'checksum': 'sha1$foo2', # <- this value doesnt match the original but it will get stripped off
-                'class': 'File',
-                'location': 'file://' + os.path.join(self.tmpdir, 'output/report.html'),
-                'path': os.path.join(self.tmpdir, 'output/report.html'),
-                'size': 457, # <- this value doesnt match the original but it will get stripped off
-                'nameext' : '.html',
-                'nameroot' : 'report'
-                }
-            ]
-        }
-        self.maxDiff = None
-        self.assertCWLDictEqual(_dir, expected)
-
-        # This time use a custom mapping
-        _file = OFile(size = 123, name = 'sample.txt', hash = 'samplehash1')
-        _report = OFile(size = 456, name = 'report1.html', hash = 'foo1')
-        _dir = ODir(name = 'output', dir = self.tmpdir, items = [_file, _report])
-        expected = {
-            'basename': 'output',
-            'class': 'Directory',
-            'location': 'file://'+ os.path.join(self.tmpdir, 'output'),
-            'path': os.path.join(self.tmpdir, 'output'),
-            'nameext' : '',
-            'nameroot' : 'output',
-            'listing': [
-                {
-                'basename': 'sample.txt',
-                'checksum': 'sha1$samplehash1',
-                'class': 'File',
-                'location': 'file://' + os.path.join(self.tmpdir, 'output/sample.txt'),
-                'path': os.path.join(self.tmpdir, 'output/sample.txt'),
-                'size': 123,
-                'nameext' : '.txt',
-                'nameroot' : 'sample'
-                },
-                {
-                'basename': 'report1.html',
-                'checksum': 'sha1$foo2', # <- this value doesnt match the original but it will get stripped off
-                'class': 'File',
-                'location': 'file://' + os.path.join(self.tmpdir, 'output/report1.html'),
-                'path': os.path.join(self.tmpdir, 'output/report1.html'),
-                'size': 457, # <- this value doesnt match the original but it will get stripped off
-                'nameext' : '.html',
-                'nameroot' : 'report1'
-                }
-            ]
-        }
-        related_keys = [
-            ('basename', "report1.html", ['size', 'checksum'])
-            ]
-        self.assertCWLDictEqual(_dir, expected, related_keys = related_keys)
-
-
 
 # The next test cases are going to run an actual CWL to test against their results
 has_cwl_runner = True if shutil.which('cwl-runner') else False
@@ -275,6 +146,9 @@ if not has_cwl_runner:
     print(">>> skipping tests that require cwl-runner")
 
 class TestSerializeCWLOutput(PlutoTestCase):
+    """
+    Test that CWL output can be represented accurately with the serializer OFile
+    """
     CWL_DIR = os.path.abspath('cwl')
     cwl_file = CWLFile('copy.cwl', CWL_DIR = CWL_DIR)
 
@@ -357,7 +231,6 @@ class TestSerializeCWLDirOutput(PlutoTestCase):
                 OFile(name = 'input.maf', size = 12, hash = 'ce7e0e370d46ae73b6478c062dec9f1a2d6bb37e')
             ])
             }
-        self.maxDiff = None
         self.assertCWLDictEqual(output_json, expected_output)
 
 
@@ -388,7 +261,6 @@ class TestSerializeCWLSubDirOutput(PlutoTestCase):
                 ])
             ])
             }
-        self.maxDiff = None
         self.assertCWLDictEqual(output_json, expected_output)
 
 
