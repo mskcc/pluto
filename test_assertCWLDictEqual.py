@@ -8,8 +8,6 @@ for validating the output items from a CWL workflow
 """
 import os
 import unittest
-import shutil
-import json
 from serializer import OFile, ODir
 from tools import (
         PlutoTestCase, 
