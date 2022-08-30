@@ -29,6 +29,7 @@ install: conda
 bash:
 	bash
 
+# $ python3 -m unittest test_tables.py
 test:
 	python3 -m unittest discover .
 	CWL_ENGINE=toil python3 -m unittest discover .

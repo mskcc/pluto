@@ -4,6 +4,7 @@
 unit tests for table IO handling methods from the tools module
 """
 import os
+import gzip
 import unittest
 from tools import (
         md5_file, 
@@ -224,6 +225,46 @@ class TestTableHandlers(PlutoTestCase):
         hash = md5_file(input_path)
 
         self.assertEqual(hash, '7180052ec5b7f215a8c0eb263b474618')
+
+
+class TestGzIO(PlutoTestCase):
+    """
+    Test that files in .gz format can be automatically opened and read as tables
+    """
+    def test_write_read_gz1(self):
+        # make a .gz table file
+        # NOTE: filename must end with .gz
+        gz_file = os.path.join(self.tmpdir, "data.tsv.gz")
+        fout = gzip.open(gz_file, "wt")
+        lines = [
+            ['# comment 1'],
+            ['# comment 2'],
+            ['Hugo_Symbol', 't_depth', 't_alt_count'],
+            ['SUFU', '100', '75'],
+            ['GOT1', '100', '1'],
+            ['SOX9', '100', '0'],
+        ]
+        for line in lines:
+            l = '\t'.join(line) + '\n'
+            fout.write(l)
+        fout.close()
+
+        # NOTE: cannot take hash of .gz because the bytes are discrepant between instances!
+        # hash = md5_file(gz_file)
+        # self.assertEqual(hash, '3a52734d91cc020ff6689b0d13ab53d1')
+
+        # load the mutations; automatically reads from .gz input
+        comments, mutations = self.load_mutations(gz_file)
+
+        expected_comments = ['# comment 1', '# comment 2']
+        self.assertEqual(comments, expected_comments)
+
+        expected_mutations = [
+            {'Hugo_Symbol': 'SUFU', 't_depth': '100', 't_alt_count':'75'},
+            {'Hugo_Symbol': 'GOT1', 't_depth': '100', 't_alt_count':'1'},
+            {'Hugo_Symbol': 'SOX9', 't_depth': '100', 't_alt_count':'0'}
+            ]
+        self.assertEqual(mutations, expected_mutations)
 
 
 class TestMafWriter(PlutoTestCase):

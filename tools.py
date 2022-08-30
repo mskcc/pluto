@@ -6,6 +6,7 @@ import os
 import subprocess as sp
 import csv
 import json
+import gzip
 from datetime import datetime
 # TODO: fix these imports somehow
 try:
@@ -524,15 +525,25 @@ def parse_header_comments(
     """
     comments = []
     start_line = 0
+    
+    is_gz = False
+    if filename.endswith('.gz'):
+        is_gz = True
+    
+    if is_gz:
+        fin = gzip.open(filename, 'rt')
+    else:
+        fin = open(filename)
+
     # find the first line without comments
-    with open(filename) as fin:
-        for i, line in enumerate(fin):
-            if line.startswith(comment_char):
-                if not ignore_comments:
-                    comments.append(line.strip())
-                start_line += 1
-            else:
-                break
+    for i, line in enumerate(fin):
+        if str(line).startswith(comment_char):
+            if not ignore_comments:
+                comments.append(line.strip())
+            start_line += 1
+        else:
+            break
+    fin.close()
     return(comments, start_line)
 
 def load_mutations(
@@ -563,16 +574,29 @@ def load_mutations(
     Loads all mutation records into memory at once; for large datasets use TableReader to iterate over records instead
     """
     comments, start_line = parse_header_comments(filename)
-    with open(filename) as fin:
-        while start_line > 0:
-            next(fin)
-            start_line -= 1
-        reader = csv.DictReader(fin, delimiter = '\t')
-        mutations = [ row for row in reader ]
+    
+    is_gz = False
+    if filename.endswith('.gz'):
+        is_gz = True
+    
+    if is_gz:
+        fin = gzip.open(filename, 'rt')
+    else:
+        fin = open(filename)
+
+    # with open(filename) as fin:
+    while start_line > 0:
+        next(fin)
+        start_line -= 1
+    reader = csv.DictReader(fin, delimiter = '\t')
+    mutations = [ row for row in reader ]
+    
     if strip:
         for mut in mutations:
             for key in strip_keys:
                 mut.pop(key, None)
+    
+    fin.close()
     return(comments, mutations)
 
 def write_table(
