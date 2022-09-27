@@ -525,11 +525,11 @@ def parse_header_comments(
     """
     comments = []
     start_line = 0
-    
+
     is_gz = False
     if filename.endswith('.gz'):
         is_gz = True
-    
+
     if is_gz:
         fin = gzip.open(filename, 'rt')
     else:
@@ -574,11 +574,11 @@ def load_mutations(
     Loads all mutation records into memory at once; for large datasets use TableReader to iterate over records instead
     """
     comments, start_line = parse_header_comments(filename)
-    
+
     is_gz = False
     if filename.endswith('.gz'):
         is_gz = True
-    
+
     if is_gz:
         fin = gzip.open(filename, 'rt')
     else:
@@ -590,12 +590,12 @@ def load_mutations(
         start_line -= 1
     reader = csv.DictReader(fin, delimiter = '\t')
     mutations = [ row for row in reader ]
-    
+
     if strip:
         for mut in mutations:
             for key in strip_keys:
                 mut.pop(key, None)
-    
+
     fin.close()
     return(comments, mutations)
 
@@ -984,6 +984,40 @@ class PlutoTestCase(unittest.TestCase):
         ('basename', "igv_report.html", ['size', 'checksum'])
         ]
 
+    @classmethod
+    def setUpClass(cls):
+        """
+        This gets run once after the class is imported, and before the unit test cases run
+
+        Override this with methods that assign attributes back to cls
+        e.g. set up a single pipeline to run in this method then set up test cases to evaluate its results
+
+        NOTE: class gets imported once, but each test case gets executed in a separate instance of the class
+        so we cannot assign values to instance "self", must be assigned to "cls"
+
+        NOTE: dont think we can use super() here
+        """
+        pass
+        # example;
+        # need to make an instance of the test case class in order to run it
+        # tc = cls()
+        # tc.setUp()
+        # output_json, output_dir = tc.setUpRun() # make a method to run the pipeline and return its outputs
+        # store the outputs on the class itself
+        # cls.tc = tc
+        # cls.tmpdir = tc.tmpdir
+        # cls.output_json = output_json
+        # cls.output_dir = output_dir
+
+    @classmethod
+    def tearDownClass(cls):
+        """
+        Gets run
+        """
+        pass
+        # example;
+        # cls.tc.tearDown() # cls.rmtree(cls.tmpdir)
+
     def setUp(self):
         """
         This gets automatically run before each test case
@@ -1041,7 +1075,11 @@ class PlutoTestCase(unittest.TestCase):
 
         # remove the tmpdir upon test completion
         if not self.preserve:
-            shutil.rmtree(self.tmpdir)
+            PlutoTestCase.rmtree(self.tmpdir)
+
+    @staticmethod
+    def rmtree(path):
+        shutil.rmtree(path)
 
     def run_cwl(
         self,
@@ -1356,7 +1394,7 @@ class PlutoTestCase(unittest.TestCase):
             unwantedValues = allValues - wantedValuesSet
             message = "got unwanted values in field {}: {} : wanted values: {}".format(fieldname, unwantedValues, wantedValuesSet)
             self.assertEqual(len(unwantedValues), 0, message, *args, **kwargs)
-    
+
     def assertMutFieldDoesntContain(
         self,
         filepath: str,
@@ -1376,7 +1414,7 @@ class PlutoTestCase(unittest.TestCase):
         for value in unwantedValues:
             if value in allValues:
                 presentValues.append(value)
-        
+
         wanted = []
         message = "got unwanted values {} in field {}".format(presentValues, fieldname)
         self.assertEqual(wanted, presentValues, message, *args, **kwargs)
