@@ -172,6 +172,8 @@ FIXTURES_DIR = os.environ.get('FIXTURES_DIR', '/juno/work/ci/helix_filters_01/fi
 FACETS_SNPS_VCF = os.environ.get('FACETS_SNPS_FILE', '/juno/work/ci/resources/genomes/GRCh37/facets_snps/dbsnp_137.b37__RmDupsClean__plusPseudo50__DROP_SORT.vcf')
 KNOWN_FUSIONS_FILE = os.path.join(REF_DIR, "known_fusions_at_mskcc.txt")
 IMPACT_FILE=os.environ.get('IMPACT_file', '/work/ci/helix_filters_01/reference_data/gene_lists/all_IMPACT_genes.tsv')
+CONPAIR_MARKERS_BED = os.environ.get("CONPAIR_MARKERS_BED", "/juno/work/ci/helix_filters_01/reference_data/concordance/markers/IMPACT468/FP_tiling_genotypes_for_Conpair.bed")
+CONPAIR_MARKERS_TXT = os.environ.get("CONPAIR_MARKERS_TXT", "/juno/work/ci/helix_filters_01/reference_data/concordance/markers/IMPACT468/FP_tiling_genotypes_for_Conpair.txt")
 
 ARGOS_VERSION_STRING = os.environ.get('ARGOS_VERSION_STRING', '2.x') # TODO: deprecate this
 IS_IMPACT = os.environ.get('IS_IMPACT', "True") # TODO: deprecate this
@@ -184,6 +186,8 @@ MICROSATELLITES_LIST = os.environ.get("MICROSATELLITES_LIST", "/work/ci/resource
 # dc982a3bfe1e33b201b99a8ebf3acd61  /work/ci/resources/request_files/msisensor/microsatellites.list
 # $ wc -l /work/ci/resources/request_files/msisensor/microsatellites.list
 # 33422661 /work/ci/resources/request_files/msisensor/microsatellites.list
+
+
 
 DATA_SETS = {
     "Proj_08390_G": { # full sample Argos output
