@@ -243,5 +243,9 @@ DATA_SETS = {
         "MAF_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "maf"),
         "VCF_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "vcf"),
         "OUTPUT_DIR": os.path.join(FIXTURES_DIR, "Fillout01", "output")
+    },
+    "Conpair_1": {
+        "BAM_DIR": os.path.join(FIXTURES_DIR, "Conpair_1", "bam"),
+        "LIKELIHOODS": os.path.join(FIXTURES_DIR, "Conpair_1", "likelihoods"),
     }
 }
