@@ -1,4 +1,4 @@
-export SHELL:=/bin/bash
+SHELL:=/bin/bash
 .ONESHELL:
 UNAME:=$(shell uname)
 
@@ -23,14 +23,15 @@ conda:
 	bash "$(CONDASH)" -b -p conda
 	rm -f "$(CONDASH)"
 
+# source conda/bin/activate
+# conda deactivate
 install: conda
-	pip install -r requirements.txt
+	. conda/bin/activate && \
+	conda env update --file environment.yml
 
-bash:
-	bash
 
 # $ python3 -m unittest test_tables.py
 test:
 	python3 -m unittest discover .
 	CWL_ENGINE=toil python3 -m unittest discover .
-	
+
