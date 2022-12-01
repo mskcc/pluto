@@ -1,8 +1,10 @@
 channels:
   - defaults
   - anaconda
+  - conda-forge
 dependencies:
   - pytest=7.1.2
+  - nodejs
   - pip=19
   - pip:
     - git+https://github.com/mskcc/toil.git@5.4.2#egg=toil[cwl]
