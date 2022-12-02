@@ -31,7 +31,8 @@ install: conda
 
 
 # $ python3 -m unittest test_tables.py
+# python3 -m unittest discover .
+# CWL_ENGINE=toil python3 -m unittest discover .
 test:
-	python3 -m unittest discover .
-	CWL_ENGINE=toil python3 -m unittest discover .
-
+	pytest --ignore docs -n auto .
+	CWL_ENGINE=toil pytest --ignore docs -n auto .

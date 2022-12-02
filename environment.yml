@@ -4,6 +4,7 @@ channels:
   - conda-forge
 dependencies:
   - pytest=7.1.2
+  - pytest-xdist=2.5.0
   - nodejs
   - pip=19
   - pip:
