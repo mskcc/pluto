@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-test cases for tools.clean_dicts, which is the core scrubbing logic behind assertCWLDictEqual, 
+test cases for tools.clean_dicts, which is the core scrubbing logic behind assertCWLDictEqual,
 which makes up the most important CWL validation methods in the pluto module
 """
 import os
 import unittest
-from tools import (
-        PlutoTestCase, 
-        clean_dicts
-    )
+try:
+    from tools import (
+            PlutoTestCase,
+            clean_dicts
+        )
+except ModuleNotFoundError:
+    from .tools import (
+            PlutoTestCase,
+            clean_dicts
+        )
 
 class TestCleanDicts(PlutoTestCase):
     def test_clean_keys_from_dict(self):

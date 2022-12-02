@@ -6,15 +6,26 @@ unit tests for table IO handling methods from the tools module
 import os
 import gzip
 import unittest
-from tools import (
-        md5_file, 
-        PlutoTestCase, 
-        TableReader, 
-        write_table, 
-        load_mutations, 
-        dicts2lines, 
-        MafWriter
-    )
+try:
+    from tools import (
+            md5_file,
+            PlutoTestCase,
+            TableReader,
+            write_table,
+            load_mutations,
+            dicts2lines,
+            MafWriter
+        )
+except ModuleNotFoundError:
+    from .tools import (
+            md5_file,
+            PlutoTestCase,
+            TableReader,
+            write_table,
+            load_mutations,
+            dicts2lines,
+            MafWriter
+        )
 
 class TestTableHandlers(PlutoTestCase):
     def test_write_read_lines(self):

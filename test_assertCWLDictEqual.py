@@ -2,18 +2,24 @@
 # -*- coding: utf-8 -*-
 """
 unit tests for the serializer assertCWLDictEqual method
-because its one of the most important methods in the test suite, 
+because its one of the most important methods in the test suite,
 for validating the output items from a CWL workflow
 
 """
 import os
 import unittest
-from serializer import OFile, ODir
-from tools import (
-        PlutoTestCase, 
-        CWLFile
-    )
-
+try:
+    from serializer import OFile, ODir
+    from tools import (
+            PlutoTestCase,
+            CWLFile
+        )
+except ModuleNotFoundError:
+    from .serializer import OFile, ODir
+    from .tools import (
+            PlutoTestCase,
+            CWLFile
+        )
 
 class TestAssertCWLDictEqual(PlutoTestCase):
     def test_assertCWLDictEqual(self):

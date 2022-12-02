@@ -6,14 +6,24 @@ unit tests for the tools module
 import os
 import unittest
 import shutil
-from tools import (
-    md5_file, 
-    md5_obj, 
-    PlutoTestCase, 
-    CWLFile, 
-    write_table, 
-    load_mutations
-)
+try:
+    from tools import (
+        md5_file,
+        md5_obj,
+        PlutoTestCase,
+        CWLFile,
+        write_table,
+        load_mutations
+    )
+except ModuleNotFoundError:
+    from .tools import (
+        md5_file,
+        md5_obj,
+        PlutoTestCase,
+        CWLFile,
+        write_table,
+        load_mutations
+    )
 
 class TestMd5(PlutoTestCase):
     def test_md5_file(self):
