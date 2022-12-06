@@ -205,7 +205,9 @@ DATA_SETS = {
         "MAF_FILTER_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "maf_filter"),
         "SNP_PILEUP_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "snp-pileup"),
         'REF_FASTA': REF_FASTA,
-        'microsatellites_file': MICROSATELLITES_LIST
+        'microsatellites_file': MICROSATELLITES_LIST,
+        "MSI_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "msi"),
+        "TMB_DIR": os.path.join(FIXTURES_DIR, "Proj_08390_G", "tmb"),
     },
     "Proj_1": { # same as Proj_08390_G but both filenames and file contents have been scrubbed; results in different file md5's
         "MAF_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "maf"),
@@ -216,6 +218,8 @@ DATA_SETS = {
         "INPUTS_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "inputs"),
         'REF_FASTA': REF_FASTA,
         "targets_list": "/juno/work/ci/resources/roslin_resources/targets/HemePACT_v4/b37/HemePACT_v4_b37_targets.ilist",
+        "MSI_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "msi"),
+        "TMB_DIR": os.path.join(FIXTURES_DIR, "Proj_1", "tmb"),
     },
     "demo":{ # small subset of samples on a full project
         "DIR": os.path.join(FIXTURES_DIR, "demo"),
