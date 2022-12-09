@@ -10,6 +10,17 @@ class NeedsOverrideError(Exception):
     """
     pass
 
+class MissingCWLError(NeedsOverrideError):
+    """
+    Exception object type to use as placeholder when some other CWL object or path should have been used
+    """
+    pass
+
+class MissingResultObjError(NeedsOverrideError):
+    pass
+
+class MissingTestCaseError(NeedsOverrideError):
+    pass
 
 class SettingBaseClass(object):
     """

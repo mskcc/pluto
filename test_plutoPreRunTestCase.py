@@ -17,11 +17,8 @@ except ModuleNotFoundError:
             CWLFile,
         )
 
-CWL_DIR = os.path.abspath('cwl')
-cwl_file = CWLFile('copy.cwl', CWL_DIR = CWL_DIR)
-
 class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
-    cwl_file = cwl_file
+    cwl_file = CWLFile('copy.cwl', CWL_DIR = os.path.abspath('cwl'))
 
     def setUpRun(self):
         """

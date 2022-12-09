@@ -2,24 +2,42 @@ from typing import Dict, Tuple
 
 try:
     from plutoTestCase import PlutoTestCase
-    from classes import NeedsOverrideError
+    from classes import (
+        NeedsOverrideError,
+        MissingCWLError,
+        MissingResultObjError,
+        MissingTestCaseError
+        )
 except ImportError:
-    from .classes import NeedsOverrideError
+    from .classes import (
+        NeedsOverrideError,
+        MissingCWLError,
+        MissingResultObjError,
+        MissingTestCaseError
+        )
     from .plutoTestCase import PlutoTestCase
 
 
 class Result:
     """
+    Object to hold the results of a CWL pipeline run and its expected output
     """
     def __init__(self, output: Dict, expected: Dict, dir: str):
         self.output = output
         self.expected = expected
         self.dir = dir
-    
-    @classmethod
-    def new(cls):
-        return(cls({}, {}, ""))
 
+class CWLPlaceholder:
+    def __get__(self, instance, owner):
+        raise MissingCWLError("A CWL object or path needs to be provided in your subclass for PlutoPreRunTestCase.cwl_file")
+
+class ResultPlaceholder:
+    def __get__(self, instance, owner):
+        raise MissingResultObjError("A Result object needs to be provided in your subclass for PlutoPreRunTestCase.res")
+
+class TestCasePlaceholder:
+    def __get__(self, instance, owner):
+        raise MissingTestCaseError("A unittest.TestCase object needs to be provided in your subclass for PlutoPreRunTestCase.tc")
 
 class PlutoPreRunTestCase(PlutoTestCase):
     """
@@ -35,17 +53,17 @@ class PlutoPreRunTestCase(PlutoTestCase):
     # override them with the ones specific to your test case
 
     # put a CWLFile object or path to a .cwl file here
-    cwl_file = None
+    cwl_file = CWLPlaceholder()
     
     # put setUpClass run results here
-    res = Result.new()
+    res = ResultPlaceholder()
     
     # put an instance of a PlutoTestCase here to use for setUp and tearDown of the tmpdir
     # we need to keep an initialized instance of PlutoTestCase in order to maintain the tmpdir
     # until all tests are completed, 
     # then we can remove it with the classmethod tearDownClass
     # otherwise the tmpdir gets automatically deleted at the end of ever 'test_' method
-    tc = None
+    tc = TestCasePlaceholder()
 
     # def setUp(self):
     #     """
