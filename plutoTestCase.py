@@ -34,6 +34,9 @@ try:
         load_mutations,
         parse_header_comments
     )
+    from .run import (
+        run_command,
+    )
 except ImportError:
     from settings import (
         DATA_SETS,
@@ -59,6 +62,9 @@ except ImportError:
         clean_dicts,
         load_mutations,
         parse_header_comments
+    )
+    from .run import (
+        run_command,
     )
 
 class PlutoTestCase(unittest.TestCase):
