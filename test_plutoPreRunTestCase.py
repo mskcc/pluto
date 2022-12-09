@@ -64,17 +64,17 @@ class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
     
     def test_baz1(self):
         self.assertNumMutationsHash(
-            self.res.output['output_file']['path'], 
+            OFile.init_dict(self.res.output['output_file']).path, 
             3, '27e9aa95e80f808553624eb7522622f8')
     
     def test_foo2(self):
         self.assertMutFieldContains(
-            self.res.output['output_file']['path'], 
+            OFile.init_dict(self.res.output['output_file']).path, 
             "Hugo_Symbol", ["SUFU", "GOT1", "SOX9"], containsAll = True)
     
     def test_bar2(self):
         self.assertMutFieldDoesntContain(
-            self.res.output['output_file']['path'], 
+            OFile.init_dict(self.res.output['output_file']).path, 
             "Hugo_Symbol", [""])
 
 
