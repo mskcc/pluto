@@ -32,7 +32,8 @@ try:
         write_table,
         clean_dicts,
         load_mutations,
-        parse_header_comments
+        parse_header_comments,
+        md5_obj
     )
     from .run import (
         run_command,
@@ -61,7 +62,8 @@ except ImportError:
         write_table,
         clean_dicts,
         load_mutations,
-        parse_header_comments
+        parse_header_comments,
+        md5_obj
     )
     from .run import (
         run_command,
