@@ -2,7 +2,9 @@ from typing import Dict, Tuple
 
 try:
     from plutoTestCase import PlutoTestCase
+    from classes import NeedsOverrideError
 except ImportError:
+    from .classes import NeedsOverrideError
     from .plutoTestCase import PlutoTestCase
 
 
@@ -64,11 +66,13 @@ class PlutoPreRunTestCase(PlutoTestCase):
         # }
         # output_json, output_dir = self.run_cwl()
         # return(output_json, output_dir)
+        raise NeedsOverrideError("PlutoPreRunTestCase.setUpRun() needs to be overriden in your custom class")
         return( {}, "" ) 
     
     def getExpected(self, output_dir: str) -> Dict:
         """
         """
+        raise NeedsOverrideError("PlutoPreRunTestCase.getExpected() needs to be overriden in your custom class")
         return( {} )
     
     @classmethod
@@ -85,8 +89,6 @@ class PlutoPreRunTestCase(PlutoTestCase):
         output_json, output_dir = cls.tc.setUpRun()
 
         # store the outputs on the class itself
-        # cls.res['tc'] = tc
-        # cls.res['tmpdir'] = cls.tc.tmpdir
         cls.res = Result(output = output_json, expected = cls.tc.getExpected(output_dir), dir = output_dir)
 
     @classmethod
@@ -96,5 +98,4 @@ class PlutoPreRunTestCase(PlutoTestCase):
         after all 'test_' methods are complete
         This method needs to run the class instance tearDown method
         """
-        # cls.res['tc'].tearDown()
         cls.tc.tearDown()

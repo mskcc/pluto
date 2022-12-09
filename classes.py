@@ -3,6 +3,14 @@ Helper classes to use throughout the pluto module
 TODO: move more classes into this module
 """
 
+class NeedsOverrideError(Exception):
+    """
+    Exception to throw when some class method or attribute should have been overriden in a subclass 
+    but wasnt and so a placeholder default got executed
+    """
+    pass
+
+
 class SettingBaseClass(object):
     """
     Base class for Setting's, will accept a string value, clean it up, and store it
