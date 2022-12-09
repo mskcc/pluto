@@ -433,6 +433,26 @@ class PlutoTestCase(unittest.TestCase):
             print(json.dumps(d1_copy, indent = 4))
             print(json.dumps(d2_copy, indent = 4))
         self.assertDictEqual(d1_copy, d2_copy, *args, **kwargs)
+    
+    def assertMutationsHash(
+        self,
+        mutationsPath: str, # path to mutation file to test
+        expected_hash: str, # md5 of the Python loaded mutation list object
+        strip: bool = True, # need this to remove variable mutation fields
+        _print: bool = False, # don't run tests, just print the results (for dev and debug)
+        *args, **kwargs
+        ):
+        """
+        wrapper for asserting that the number of mutations and the md5 of the Python mutation object match the expected values
+        Use this with `strip` for removal of mutation keys that can be variable and change md5
+        """
+        comments, mutations = self.load_mutations(mutationsPath, strip = strip)
+        hash = md5_obj(mutations)
+
+        if _print:
+            print(hash)
+        else:
+            self.assertEqual(hash, expected_hash, *args, **kwargs)
 
     def assertNumMutationsHash(
         self,
