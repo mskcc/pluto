@@ -1225,7 +1225,7 @@ class PlutoTestCase(unittest.TestCase):
         self,
         d1: dict,
         d2: dict,
-        bad_keys = ('nameext', 'nameroot'), # These keys show up inconsistently in Toil CWL output so just strip them out any time we see them
+        bad_keys = ('nameext', 'nameroot', 'streamable'), # These keys show up inconsistently in Toil CWL output so just strip them out any time we see them
         related_keys = None, # mapping of key:value pairs that should trigger removal of other keys
         _print: bool = False,
         _printJSON: bool = False,

@@ -105,7 +105,7 @@ CWL_ARGS = [
 TOIL_ARGS = [
     '--singularity', # run with Singularity instead of Docker
     '--disable-user-provenance', '--disable-host-provenance',
-    '--disableCaching', 'True',
+    '--disableCaching', # 'True', # NOTE: in Toil 5.4.2 you use '--disableCaching True' but in 5.7.1 you use just '--disableCaching'
     '--realTimeLogging',
     # need to propagate the env vars for Singularity, etc., into the HPC jobs
     '--preserve-environment', 'PATH', 'TMPDIR', 'TOIL_LSF_ARGS', 'SINGULARITY_PULLDIR', 'SINGULARITY_CACHEDIR',
