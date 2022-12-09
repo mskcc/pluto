@@ -23,11 +23,16 @@ conda:
 	bash "$(CONDASH)" -b -p conda
 	rm -f "$(CONDASH)"
 
-# source conda/bin/activate
-# conda deactivate
+# install for self-contained conda in current dir
 install: conda
 	. conda/bin/activate && \
 	conda env update --file environment.yml
+# source conda/bin/activate
+# conda deactivate
+
+# install into pre-existing conda
+# conda env create -n pluto -f environment.yml
+# conda activate pluto
 
 
 # $ python3 -m unittest test_tables.py
