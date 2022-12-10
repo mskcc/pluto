@@ -55,7 +55,7 @@ if ENABLE_INTEGRATION_TESTS:
 USE_LSF = UseLSF(os.environ.get('USE_LSF', "False"))
 
 # whether Toil or cwltool should be used
-CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
+CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', "None"))
 
 # the location of this file
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -73,20 +73,20 @@ if not TMP_DIR:
     TMP_DIR = os.path.join(os.getcwd(), "tmp")
 
 # if the tmpdir used in PlutoTestCase should be preserved (not deleted) after tests complete
-KEEP_TMP = KeepTmp(os.environ.get('KEEP_TMP', False))
+KEEP_TMP = KeepTmp(os.environ.get('KEEP_TMP', "False"))
 
 # if the CWL runner command should be printed before running it
-PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', False))
+PRINT_COMMAND = PrintCommand(os.environ.get('PRINT_COMMAND', "False"))
 
 # print the name of each test before it starts running
-PRINT_TESTNAME = PrintTestName(os.environ.get('PRINT_TESTNAME', False))
+PRINT_TESTNAME = PrintTestName(os.environ.get('PRINT_TESTNAME', "False"))
 
 # retrieve the run stats for Toil
-TOIL_STATS = ToilStats(os.environ.get('STATS', False))
+TOIL_STATS = ToilStats(os.environ.get('STATS', "False"))
 
-PRINT_STATS = PrintToilStats(os.environ.get('PRINT_STATS', False))
+PRINT_STATS = PrintToilStats(os.environ.get('PRINT_STATS', "False"))
 
-SAVE_STATS = SaveToilStats(os.environ.get('SAVE_STATS', False))
+SAVE_STATS = SaveToilStats(os.environ.get('SAVE_STATS', "False"))
 
 # dir to save stats files in
 STATS_DIR = os.environ.get("STATS_DIR", None)
