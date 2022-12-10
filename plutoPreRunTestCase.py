@@ -48,6 +48,13 @@ class PlutoPreRunTestCase(PlutoTestCase):
     This will save a ton of dev time when multiple assertions are needed to 
     verify the output of a workflow that takes a long time to finish,
     since we wont have to re-run the entire workflow repeatedly just to update all assertions
+
+
+    TODO: get this to work with parameterized test cases;
+    right now, it breaks on cls.tc.setUpRun() when trying to pass in test_input objects
+    https://stackoverflow.com/questions/17434031/parametrizing-test-classes-in-pytest/22417893#22417893
+    https://stackoverflow.com/questions/38729007/parametrize-class-tests-with-pytest
+    https://docs.pytest.org/en/7.1.x/example/parametrize.html
     """
     # these attributes and methods will be availabled under 'self' after initializing the class; 
     # override them with the ones specific to your test case
