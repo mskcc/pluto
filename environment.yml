@@ -5,6 +5,7 @@ channels:
 dependencies:
   - pytest=7.1.2
   - pytest-xdist=2.5.0
+  - mypy=0.981
   - nodejs
   - pip>=19
   - pip:

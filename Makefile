@@ -41,3 +41,7 @@ install: conda
 test:
 	pytest --ignore docs -n auto .
 	CWL_ENGINE=toil pytest --ignore docs -n auto .
+
+
+lint:
+	mypy --namespace-packages --explicit-package-bases .
