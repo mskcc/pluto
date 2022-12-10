@@ -2,6 +2,7 @@
 Helper classes to use throughout the pluto module
 TODO: move more classes into this module
 """
+from typing import Optional, Union
 
 class NeedsOverrideError(Exception):
     """
@@ -30,7 +31,7 @@ class SettingBaseClass(object):
     setting = SettingBaseClass('Foo')
     setting == 'foo' # True
     """
-    def __init__(self, value: str = None, default: str = None) -> None:
+    def __init__(self, value: Optional[str] = None, default: Optional[str] = None) -> None:
         self._value = value # the original value in case we need it again
         self._default = default
         if value is None:
@@ -40,6 +41,8 @@ class SettingBaseClass(object):
 
     def __str__(self):
         return(self.value)
+    def __repr__(self):
+        return("SettingBaseClass(" + self._value.__repr__() + ")")
     def __eq__(self, other):
         return(self.value == other)
     def __bool__(self):
@@ -50,11 +53,11 @@ class BooleanSettingBaseClass(object):
     Similar to SettingBaseClass but accepts a string value and converts it to a boolean
     Recognizes some specific string values for direct true/false mappings, otherwise passes down to `bool()`
     """
-    def __init__(self, value: str) -> None:
+    def __init__(self, value: Union[str, bool]) -> None:
         self._value = value # save the original value passed in
         self.value = self.parse(value) # get the parsed value converted to boolean
 
-    def parse(self, value: str) -> bool:
+    def parse(self, value: Union[str, bool]) -> bool:
         """
         Recognize a few specific strings to return pre-definied values for, otherwise use `bool()`
         """
@@ -76,6 +79,9 @@ class BooleanSettingBaseClass(object):
 
     def __str__(self):
         return(str(self.value))
+    
+    def __repr__(self):
+        return("BooleanSettingBaseClass(" + self._value.__repr__() + ")" )
 
     def __eq__(self, other):
         return(self.value == other)

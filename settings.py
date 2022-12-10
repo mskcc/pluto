@@ -37,22 +37,22 @@ except ModuleNotFoundError:
         SaveToilStats
         )
 
-quiet_mode = SuppressStartupMessages(os.environ.get('QUIET', False))
+quiet_mode = SuppressStartupMessages(os.environ.get('QUIET', "False"))
 
 # enable execution of very large tests used in some test cases;
-ENABLE_LARGE_TESTS = EnableLargeTests(os.environ.get('LARGE_TESTS', False))
+ENABLE_LARGE_TESTS = EnableLargeTests(os.environ.get('LARGE_TESTS', "False"))
 if ENABLE_LARGE_TESTS:
     if not quiet_mode:
         print(">>> Enabling execution of large test cases...")
 
 # use this flag for enabling the huge workflow test cases for Jenkins CI, etc
-ENABLE_INTEGRATION_TESTS = EnableIntergrationTests(os.environ.get('INTEGRATION_TESTS', False))
+ENABLE_INTEGRATION_TESTS = EnableIntergrationTests(os.environ.get('INTEGRATION_TESTS', "False"))
 if ENABLE_INTEGRATION_TESTS:
     if not quiet_mode:
         print(">>> Enabling execution of large integration test cases...")
 
 # use LSF with Toil
-USE_LSF = UseLSF(os.environ.get('USE_LSF', None))
+USE_LSF = UseLSF(os.environ.get('USE_LSF', "False"))
 
 # whether Toil or cwltool should be used
 CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))

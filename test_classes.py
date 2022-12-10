@@ -22,80 +22,66 @@ class TestSettingClasses(unittest.TestCase):
     def test_setting(self):
         """
         """
-        setting = SettingBaseClass('Foo')
-        self.assertEqual(setting, 'foo' )
-
-        setting = SettingBaseClass(None)
-        self.assertEqual(setting, "none")
-
-        setting = SettingBaseClass("none")
-        self.assertEqual(setting, "none")
+        values = [
+            ('Foo', 'foo'),
+            (None, "none"),
+            ("none", "none")
+        ]
+        for val, expected in values:
+            self.assertEqual(SettingBaseClass(val), expected)
 
     def test_cwl_engine(self):
         """
         """
-        setting = CWLEngine("toil")
-        self.assertEqual(setting.toil, True)
-        self.assertEqual(setting.cwltool, False)
-
-        setting = CWLEngine("Toil")
-        self.assertEqual(setting.toil, True)
-        self.assertEqual(setting.cwltool, False)
-
-        setting = CWLEngine("cwltool")
-        self.assertEqual(setting.toil, False)
-        self.assertEqual(setting.cwltool, True)
+        values = [
+            {
+                "value": "toil",
+                "toil": True,
+                "cwltool": False
+            },
+            {
+                "value": "Toil",
+                "toil": True,
+                "cwltool": False
+            },
+            {
+                "value": "cwltool",
+                "toil": False,
+                "cwltool": True
+            },
+        ]
+        for val in values:
+            setting = CWLEngine(val['value'])
+            self.assertEqual(setting.toil, val['toil'])
+            self.assertEqual(setting.cwltool, val['cwltool'])
 
     def test_bool_setting(self):
         """
         """
-        # recognized values that return True
-        setting = BooleanSettingBaseClass('True')
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass('true')
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass('t')
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass('T')
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass('none')
-        self.assertEqual(setting, False)
-
-        # recognized values that return False
-        setting = BooleanSettingBaseClass(None)
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("False")
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("false")
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("f")
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("F")
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("0")
-        self.assertEqual(setting, False)
-
-        setting = BooleanSettingBaseClass("")
-        self.assertEqual(setting, False)
-
-        # any other string values return True
-        setting = BooleanSettingBaseClass(" ")
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass("foo")
-        self.assertEqual(setting, True)
-
-        setting = BooleanSettingBaseClass("1")
-        self.assertEqual(setting, True)
+        values = [
+            # recognized values that return True
+            ('True', True),
+            ('true', True),
+            ('t', True),
+            ('T', True),
+            # recognized values that return False
+            (None, False),
+            ("None", False),
+            ('none', False),
+            (False, False),
+            ("False", False),
+            ("false", False),
+            ("f", False),
+            ("F", False),
+            ("0", False),
+            ("", False),
+            # any other string values return True
+            (" ", True),
+            ("foo", True),
+            ("1", True)
+        ]
+        for value, expected in values:
+            self.assertEqual(BooleanSettingBaseClass(value), expected)
 
 
 if __name__ == "__main__":
