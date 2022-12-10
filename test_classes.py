@@ -34,26 +34,21 @@ class TestSettingClasses(unittest.TestCase):
         """
         """
         values = [
-            {
-                "value": "toil",
-                "toil": True,
-                "cwltool": False
-            },
-            {
-                "value": "Toil",
-                "toil": True,
-                "cwltool": False
-            },
-            {
-                "value": "cwltool",
-                "toil": False,
-                "cwltool": True
-            },
+            { "value": "toil", "toil": True, "cwltool": False },
+            { "value": "Toil", "toil": True, "cwltool": False },
+            { "value": "cwltool", "toil": False, "cwltool": True },
+            { "value": "none", "toil": False, "cwltool": True },
+            { "value": "None", "toil": False, "cwltool": True },
+            { "value": None, "toil": False, "cwltool": True },
+            { "value": True, "toil": False, "cwltool": True },
+            { "value": False, "toil": False, "cwltool": True },
+            { "value": "fooooo", "toil": False, "cwltool": True },
         ]
         for val in values:
-            setting = CWLEngine(val['value'])
-            self.assertEqual(setting.toil, val['toil'])
-            self.assertEqual(setting.cwltool, val['cwltool'])
+            self.assertEqual(
+                (CWLEngine(val['value']).toil, CWLEngine(val['value']).cwltool), 
+                (val['toil'], val['cwltool'])
+                )
 
     def test_bool_setting(self):
         """

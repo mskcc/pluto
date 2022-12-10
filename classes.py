@@ -48,6 +48,22 @@ class SettingBaseClass(object):
     def __bool__(self):
         return(bool(self._value))
 
+class CWLEngine(SettingBaseClass):
+    """
+    CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
+    if CWL_ENGINE:
+        do_foo()
+    if CWL_ENGINE.toil:
+        do_toil()
+    """
+    def __init__(self, value: str = None, default: str = 'cwltool', *args, **kwargs):
+        super().__init__(value, default, *args, **kwargs)
+        self.cwltool = self.value == "cwltool"
+        self.toil = self.value == "toil"
+        # re-apply the defaults if neither was correctly set
+        if not self.cwltool and not self.toil:
+            self.cwltool = True
+
 class BooleanSettingBaseClass(object):
     """
     Similar to SettingBaseClass but accepts a string value and converts it to a boolean
@@ -89,18 +105,6 @@ class BooleanSettingBaseClass(object):
     def __bool__(self):
         return(self.value)
 
-class CWLEngine(SettingBaseClass):
-    """
-    CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', None))
-    if CWL_ENGINE:
-        do_foo()
-    if CWL_ENGINE.toil:
-        do_toil()
-    """
-    def __init__(self, value: str = None, default: str = 'cwltool', *args, **kwargs):
-        super().__init__(value, default, *args, **kwargs)
-        self.cwltool = self.value == "cwltool"
-        self.toil = self.value == "toil"
 
 class UseLSF(BooleanSettingBaseClass):
     """
