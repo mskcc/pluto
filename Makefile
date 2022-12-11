@@ -35,8 +35,8 @@ install: conda
 # conda activate pluto
 
 test:
-	pytest --ignore docs -s .
-	CWL_ENGINE=toil pytest --ignore docs -s .
+	pytest -n 4 --ignore docs -s .
+	CWL_ENGINE=toil pytest -n 4 --ignore docs -s .
 
 
 lint:
