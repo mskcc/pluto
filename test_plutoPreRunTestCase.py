@@ -4,18 +4,11 @@
 """
 import os
 import unittest
-try:
-    from serializer import OFile
-    from plutoPreRunTestCase import PlutoPreRunTestCase
-    from tools import (
-            CWLFile,
-        )
-except ModuleNotFoundError:
-    from .serializer import OFile
-    from .plutoPreRunTestCase import PlutoPreRunTestCase
-    from .tools import (
-            CWLFile,
-        )
+from serializer import OFile
+from plutoPreRunTestCase import PlutoPreRunTestCase
+from tools import (
+        CWLFile,
+    )
 
 class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
     cwl_file = CWLFile('copy.cwl', CWL_DIR = os.path.abspath('cwl'))
@@ -43,35 +36,35 @@ class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
             }
         output_json, output_dir = self.run_cwl()
         return(output_json, output_dir)
-    
+
     def getExpected(self, output_dir):
         return({"output_file": OFile(
-            name = "output.maf", 
-            dir = output_dir, 
-            size = 90, 
+            name = "output.maf",
+            dir = output_dir,
+            size = 90,
             hash = '7bcfa105aa117881f032765595bec2e9a016a1e7')})
 
     def test_foo1(self):
         self.assertEqual(
-                self.res.output['output_file']['checksum'], 
+                self.res.output['output_file']['checksum'],
                 self.res.expected['output_file']['checksum'])
-    
+
     def test_bar1(self):
         self.assertCWLDictEqual(self.res.output, self.res.expected)
-    
+
     def test_baz1(self):
         self.assertNumMutationsHash(
-            OFile.init_dict(self.res.output['output_file']).path, 
+            OFile.init_dict(self.res.output['output_file']).path,
             3, '27e9aa95e80f808553624eb7522622f8')
-    
+
     def test_foo2(self):
         self.assertMutFieldContains(
-            OFile.init_dict(self.res.output['output_file']).path, 
+            OFile.init_dict(self.res.output['output_file']).path,
             "Hugo_Symbol", ["SUFU", "GOT1", "SOX9"], containsAll = True)
-    
+
     def test_bar2(self):
         self.assertMutFieldDoesntContain(
-            OFile.init_dict(self.res.output['output_file']).path, 
+            OFile.init_dict(self.res.output['output_file']).path,
             "Hugo_Symbol", [""])
 
 

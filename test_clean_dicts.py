@@ -6,16 +6,10 @@ which makes up the most important CWL validation methods in the pluto module
 """
 import os
 import unittest
-try:
-    from tools import (
-            PlutoTestCase,
-            clean_dicts
-        )
-except ModuleNotFoundError:
-    from .tools import (
-            PlutoTestCase,
-            clean_dicts
-        )
+from tools import (
+        PlutoTestCase,
+        clean_dicts
+    )
 
 class TestCleanDicts(PlutoTestCase):
     def test_clean_keys_from_dict(self):

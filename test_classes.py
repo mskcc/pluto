@@ -3,20 +3,11 @@
 """
 """
 import unittest
-
-# TODO: fix these imports somehow
-try:
-    from .classes import (
-        SettingBaseClass,
-        BooleanSettingBaseClass,
-        CWLEngine
-    )
-except ImportError:
-    from classes import (
-        SettingBaseClass,
-        BooleanSettingBaseClass,
-        CWLEngine
-    )
+from classes import (
+    SettingBaseClass,
+    BooleanSettingBaseClass,
+    CWLEngine
+)
 
 class TestSettingClasses(unittest.TestCase):
     def test_setting(self):
@@ -34,7 +25,7 @@ class TestSettingClasses(unittest.TestCase):
         """
         """
         values = [
-            # only settings explicitly labeled as "toil" should enable Toil, 
+            # only settings explicitly labeled as "toil" should enable Toil,
             # all others should default to cwltool
             { "value": "toil", "toil": True, "cwltool": False, "equiv_cwltool": False },
             { "value": "Toil", "toil": True, "cwltool": False, "equiv_cwltool": False },

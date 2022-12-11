@@ -7,18 +7,11 @@ import os
 import unittest
 import shutil
 import json
-try:
-    from serializer import OFile, ODir
-    from tools import (
-            PlutoTestCase,
-            CWLFile
-        )
-except ModuleNotFoundError:
-    from .serializer import OFile, ODir
-    from .tools import (
-            PlutoTestCase,
-            CWLFile
-        )
+from serializer import OFile, ODir
+from tools import (
+        PlutoTestCase,
+        CWLFile
+    )
 
 class TestSerializer(PlutoTestCase):
     def test_cwl_file1(self):
