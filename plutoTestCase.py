@@ -7,76 +7,40 @@ from pathlib import Path
 from tempfile import mkdtemp, mkstemp
 import shutil
 from copy import deepcopy
+from .settings import (
+    USE_LSF,
+    TMP_DIR,
+    KEEP_TMP,
+    CWL_ENGINE,
+    CWL_DEFAULT_ENGINE,
+    PRINT_COMMAND,
+    PRINT_TESTNAME,
+    TOIL_STATS,
+    PRINT_STATS,
+    SAVE_STATS,
+    STATS_DIR
+)
+from .settings import CWL_DIR as _CWL_DIR
+from .cwlFile import CWLFile
+from .cwlRunner import CWLRunner
+from .util import (
+    dicts2lines,
+    write_table,
+    clean_dicts,
+    load_mutations,
+    parse_header_comments,
+    md5_obj
+)
+from .run import (
+    run_command,
+)
+from .mafio import (
+    TableReader,
+)
+from .classes import (
+    CWLEngine,
+)
 
-# TODO: fix these imports somehow
-try:
-    from .settings import (
-        USE_LSF,
-        TMP_DIR,
-        KEEP_TMP,
-        CWL_ENGINE,
-        CWL_DEFAULT_ENGINE,
-        PRINT_COMMAND,
-        PRINT_TESTNAME,
-        TOIL_STATS,
-        PRINT_STATS,
-        SAVE_STATS,
-        STATS_DIR
-    )
-    from .settings import CWL_DIR as _CWL_DIR
-    from .cwlFile import CWLFile
-    from .cwlRunner import CWLRunner
-    from .util import (
-        dicts2lines,
-        write_table,
-        clean_dicts,
-        load_mutations,
-        parse_header_comments,
-        md5_obj
-    )
-    from .run import (
-        run_command,
-    )
-    from .mafio import (
-        TableReader,
-    )
-    from .classes import (
-        CWLEngine,
-    )
-except ImportError:
-    from settings import (
-        USE_LSF,
-        TMP_DIR,
-        KEEP_TMP,
-        CWL_ENGINE,
-        CWL_DEFAULT_ENGINE,
-        PRINT_COMMAND,
-        PRINT_TESTNAME,
-        TOIL_STATS,
-        PRINT_STATS,
-        SAVE_STATS,
-        STATS_DIR
-    )
-    from settings import CWL_DIR as _CWL_DIR
-    from cwlFile import CWLFile
-    from cwlRunner import CWLRunner
-    from util import (
-        dicts2lines,
-        write_table,
-        clean_dicts,
-        load_mutations,
-        parse_header_comments,
-        md5_obj
-    )
-    from run import (
-        run_command,
-    )
-    from mafio import (
-        TableReader,
-    )
-    from classes import (
-        CWLEngine,
-    )
 
 class PlutoTestCase(unittest.TestCase):
     """

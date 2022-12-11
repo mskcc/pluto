@@ -1,8 +1,5 @@
 import os
-try:
-    from .settings import CWL_DIR as _CWL_DIR
-except ImportError:
-    from settings import CWL_DIR as _CWL_DIR
+from .settings import CWL_DIR as _CWL_DIR
 
 class CWLFile(os.PathLike):
     """

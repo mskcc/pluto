@@ -3,30 +3,16 @@ import json
 import unittest
 from pathlib import Path
 from typing import Dict, Tuple, Union
-
-# TODO: fix these imports somehow
-try:
-    from .settings import (
-        PRINT_COMMAND,
-        TOIL_STATS,
-    )
-    from .cwlFile import CWLFile
-    from .run import (
-        run_command,
-        run_cwl,
-        run_cwl_toil
-    )
-except ImportError:
-    from settings import (
-        PRINT_COMMAND,
-        TOIL_STATS,
-    )
-    from cwlFile import CWLFile
-    from run import (
-        run_command,
-        run_cwl,
-        run_cwl_toil
-    )
+from .settings import (
+    PRINT_COMMAND,
+    TOIL_STATS,
+)
+from .cwlFile import CWLFile
+from .run import (
+    run_command,
+    run_cwl,
+    run_cwl_toil
+)
 
 
 class InvalidEngine(Exception):

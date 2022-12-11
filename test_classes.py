@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 """
-from classes import (
+from .classes import (
     SettingBaseClass,
     BooleanSettingBaseClass,
     CWLEngine

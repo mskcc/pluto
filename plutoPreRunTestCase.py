@@ -1,21 +1,11 @@
 from typing import Dict, Tuple
-
-try:
-    from plutoTestCase import PlutoTestCase
-    from classes import (
-        NeedsOverrideError,
-        MissingCWLError,
-        MissingResultObjError,
-        MissingTestCaseError
-        )
-except ImportError:
-    from .classes import (
-        NeedsOverrideError,
-        MissingCWLError,
-        MissingResultObjError,
-        MissingTestCaseError
-        )
-    from .plutoTestCase import PlutoTestCase
+from .plutoTestCase import PlutoTestCase
+from .classes import (
+    NeedsOverrideError,
+    MissingCWLError,
+    MissingResultObjError,
+    MissingTestCaseError
+    )
 
 
 class Result:
@@ -41,11 +31,11 @@ class TestCasePlaceholder:
 
 class PlutoPreRunTestCase(PlutoTestCase):
     """
-    A pluto test case that can run a CWL pipeline once during the testcase class setup, 
+    A pluto test case that can run a CWL pipeline once during the testcase class setup,
     then capture outputs from the workflow and save it so that
     it can be tested against in parallel downstream 'test_' methods
     instead of having to run the entire workflow in every 'test_' method
-    This will save a ton of dev time when multiple assertions are needed to 
+    This will save a ton of dev time when multiple assertions are needed to
     verify the output of a workflow that takes a long time to finish,
     since we wont have to re-run the entire workflow repeatedly just to update all assertions
 
@@ -56,18 +46,18 @@ class PlutoPreRunTestCase(PlutoTestCase):
     https://stackoverflow.com/questions/38729007/parametrize-class-tests-with-pytest
     https://docs.pytest.org/en/7.1.x/example/parametrize.html
     """
-    # these attributes and methods will be availabled under 'self' after initializing the class; 
+    # these attributes and methods will be availabled under 'self' after initializing the class;
     # override them with the ones specific to your test case
 
     # put a CWLFile object or path to a .cwl file here
     cwl_file = CWLPlaceholder()
-    
+
     # put setUpClass run results here
     res = ResultPlaceholder()
-    
+
     # put an instance of a PlutoTestCase here to use for setUp and tearDown of the tmpdir
     # we need to keep an initialized instance of PlutoTestCase in order to maintain the tmpdir
-    # until all tests are completed, 
+    # until all tests are completed,
     # then we can remove it with the classmethod tearDownClass
     # otherwise the tmpdir gets automatically deleted at the end of ever 'test_' method
     tc = TestCasePlaceholder()
@@ -92,14 +82,14 @@ class PlutoPreRunTestCase(PlutoTestCase):
         # output_json, output_dir = self.run_cwl()
         # return(output_json, output_dir)
         raise NeedsOverrideError("PlutoPreRunTestCase.setUpRun() needs to be overriden in your custom class")
-        return( {}, "" ) 
-    
+        return( {}, "" )
+
     def getExpected(self, output_dir: str) -> Dict:
         """
         """
         raise NeedsOverrideError("PlutoPreRunTestCase.getExpected() needs to be overriden in your custom class")
         return( {} )
-    
+
     @classmethod
     def setUpClass(cls):
         """

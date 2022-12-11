@@ -7,35 +7,19 @@ PRINT_COMMAND=true KEEP_TMP=true CWL_ENGINE=toil LARGE_TESTS=true python3 test_t
 
 """
 import os
-# TODO: fix these imports somehow
-try:
-    from classes import (
-        CWLEngine,
-        UseLSF,
-        EnableLargeTests,
-        EnableIntergrationTests,
-        KeepTmp,
-        PrintCommand,
-        PrintTestName,
-        SuppressStartupMessages,
-        ToilStats,
-        PrintToilStats,
-        SaveToilStats
-        )
-except ModuleNotFoundError:
-    from .classes import (
-        CWLEngine,
-        UseLSF,
-        EnableLargeTests,
-        EnableIntergrationTests,
-        KeepTmp,
-        PrintCommand,
-        PrintTestName,
-        SuppressStartupMessages,
-        ToilStats,
-        PrintToilStats,
-        SaveToilStats
-        )
+from .classes import (
+    CWLEngine,
+    UseLSF,
+    EnableLargeTests,
+    EnableIntergrationTests,
+    KeepTmp,
+    PrintCommand,
+    PrintTestName,
+    SuppressStartupMessages,
+    ToilStats,
+    PrintToilStats,
+    SaveToilStats
+    )
 
 quiet_mode = SuppressStartupMessages(os.environ.get('QUIET', "False"))
 

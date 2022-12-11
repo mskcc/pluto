@@ -1,15 +1,9 @@
 import csv
 from typing import TextIO, List, Dict, Generator
-try:
-    from .util import (
-        dicts2lines,
-        parse_header_comments,
-    )
-except ImportError:
-    from util import (
-        dicts2lines,
-        parse_header_comments,
-    )
+from .util import (
+    dicts2lines,
+    parse_header_comments,
+)
 
 
 class TableReader(object):

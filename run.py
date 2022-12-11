@@ -5,20 +5,11 @@ import unittest
 import subprocess as sp
 from pathlib import Path
 from typing import List, Dict, Tuple, Union
-
-# TODO: fix these imports somehow
-try:
-    from .settings import (
-        CWL_ARGS,
-        TOIL_ARGS,
-    )
-    from .cwlFile import CWLFile
-except ImportError:
-    from settings import (
-        CWL_ARGS,
-        TOIL_ARGS,
-    )
-    from cwlFile import CWLFile
+from .settings import (
+    CWL_ARGS,
+    TOIL_ARGS,
+)
+from .cwlFile import CWLFile
 
 def run_command(
     args: List[str], # a list of shell args to execute
