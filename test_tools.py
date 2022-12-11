@@ -4,9 +4,8 @@
 unit tests for the tools module
 """
 import os
-import unittest
 import shutil
-from tools import (
+from . import (
     md5_file,
     md5_obj,
     PlutoTestCase,
@@ -51,7 +50,7 @@ class TestCopyCWL(PlutoTestCase):
     CWL_DIR = os.path.abspath('cwl')
     cwl_file = CWLFile('copy.cwl', CWL_DIR = CWL_DIR)
 
-    @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
+    # @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
     def test_copy1(self):
         """
         Test case for running the demo copy cwl to copy a file
@@ -100,7 +99,7 @@ class TestCopyCWL(PlutoTestCase):
             ]
         self.assertEqual(mutations, expected_mutations)
 
-    @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
+    # @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
     def test_copy2(self):
         comments = [
         ['# comment 1'],
@@ -244,7 +243,3 @@ class TestPlutoTestCase(PlutoTestCase):
 
         self.assertCWLDictEqual(d1, d2, related_keys = related_keys)
 
-
-
-if __name__ == "__main__":
-    unittest.main()

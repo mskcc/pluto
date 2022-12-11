@@ -7,11 +7,11 @@ for validating the output items from a CWL workflow
 
 """
 import os
-import unittest
-from serializer import OFile, ODir
-from tools import (
+from . import (
         PlutoTestCase,
-        CWLFile
+        CWLFile,
+        OFile,
+        ODir
     )
 
 class TestAssertCWLDictEqual(PlutoTestCase):
@@ -141,6 +141,3 @@ class TestAssertCWLDictEqual(PlutoTestCase):
             ]
         self.assertCWLDictEqual(_dir, expected, related_keys = related_keys)
 
-
-if __name__ == "__main__":
-    unittest.main()

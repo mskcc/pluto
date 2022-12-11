@@ -5,8 +5,7 @@ test cases for tools.clean_dicts, which is the core scrubbing logic behind asser
 which makes up the most important CWL validation methods in the pluto module
 """
 import os
-import unittest
-from tools import (
+from . import (
         PlutoTestCase,
         clean_dicts
     )
@@ -133,6 +132,3 @@ class TestCleanDicts(PlutoTestCase):
         clean_dicts(d, related_keys = related_keys)
         self.maxDiff = None
         self.assertDictEqual(d, expected)
-
-if __name__ == "__main__":
-    unittest.main()

@@ -4,13 +4,13 @@
 unit tests for the serializer module
 """
 import os
-import unittest
 import shutil
 import json
-from serializer import OFile, ODir
-from tools import (
+from . import (
         PlutoTestCase,
-        CWLFile
+        CWLFile,
+        OFile,
+        ODir
     )
 
 class TestSerializer(PlutoTestCase):
@@ -152,7 +152,7 @@ class TestSerializeCWLOutput(PlutoTestCase):
     CWL_DIR = os.path.abspath('cwl')
     cwl_file = CWLFile('copy.cwl', CWL_DIR = CWL_DIR)
 
-    @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
+    # @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
     def test_copy1(self):
         """
         Test case for using serialized objects in a CWL test case
@@ -210,7 +210,7 @@ class TestSerializeCWLDirOutput(PlutoTestCase):
     CWL_DIR = os.path.abspath('cwl')
     cwl_file = CWLFile('put_in_dir.cwl', CWL_DIR = CWL_DIR)
 
-    @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
+    # @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
     def test_put_in_dir1(self):
         """
         Test case for dir output object
@@ -241,7 +241,7 @@ class TestSerializeCWLSubDirOutput(PlutoTestCase):
     CWL_DIR = os.path.abspath('cwl')
     cwl_file = CWLFile('create_subdir.cwl', CWL_DIR = CWL_DIR)
 
-    @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
+    # @unittest.skipIf(has_cwl_runner!=True, "need cwl runner for this test")
     def test_put_in_subdir(self):
         """
         Test case for dir output object with nested subdir
@@ -492,5 +492,4 @@ class TestLoadJSON(PlutoTestCase):
         self.assertCWLDictEqual(d2, ex)
 
 
-if __name__ == "__main__":
-    unittest.main()
+

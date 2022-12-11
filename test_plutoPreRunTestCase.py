@@ -3,11 +3,10 @@
 """
 """
 import os
-import unittest
-from serializer import OFile
-from plutoPreRunTestCase import PlutoPreRunTestCase
-from tools import (
+from . import (
         CWLFile,
+        PlutoPreRunTestCase,
+        OFile
     )
 
 class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
@@ -67,6 +66,3 @@ class TestPlutoPreRunTestCase(PlutoPreRunTestCase):
             OFile.init_dict(self.res.output['output_file']).path,
             "Hugo_Symbol", [""])
 
-
-if __name__ == "__main__":
-    unittest.main()

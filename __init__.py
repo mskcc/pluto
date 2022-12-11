@@ -68,21 +68,3 @@ from .util import (
     md5_file,
     md5_obj
 )
-
-# these are fixture file datasets
-# TODO: these need to be moved out of the repo
-from .settings import (
-    FIXTURES_DIR,
-    FACETS_SNPS_VCF,
-    KNOWN_FUSIONS_FILE,
-    IMPACT_FILE,
-    CONPAIR_MARKERS_BED,
-    CONPAIR_MARKERS_TXT,
-    ARGOS_VERSION_STRING,
-    IS_IMPACT,
-    PORTAL_FILE,
-    PORTAL_CNA_FILE,
-    REF_FASTA,
-    MICROSATELLITES_LIST,
-    DATA_SETS
-)

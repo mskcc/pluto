@@ -5,8 +5,7 @@ unit tests for table IO handling methods from the tools module
 """
 import os
 import gzip
-import unittest
-from tools import (
+from . import (
         md5_file,
         PlutoTestCase,
         TableReader,
@@ -305,6 +304,3 @@ class TestMafWriter(PlutoTestCase):
         hash = md5_file(output_file)
         self.assertEqual(hash, '584d00e49b0bd7f963af1db46a61d2f0')
 
-
-if __name__ == "__main__":
-    unittest.main()

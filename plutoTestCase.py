@@ -11,9 +11,6 @@ from copy import deepcopy
 # TODO: fix these imports somehow
 try:
     from .settings import (
-        DATA_SETS,
-        KNOWN_FUSIONS_FILE,
-        IMPACT_FILE,
         USE_LSF,
         TMP_DIR,
         KEEP_TMP,
@@ -48,9 +45,6 @@ try:
     )
 except ImportError:
     from settings import (
-        DATA_SETS,
-        KNOWN_FUSIONS_FILE,
-        IMPACT_FILE,
         USE_LSF,
         TMP_DIR,
         KEEP_TMP,
@@ -157,11 +151,6 @@ class PlutoTestCase(unittest.TestCase):
         # use_cache = False, # need to set this for some samples fillout workflows that break on split_vcf_to_mafs
         print_command = False
         )
-
-    # TODO: remove these from the object class! get them from fixtures.py instead
-    DATA_SETS = DATA_SETS
-    KNOWN_FUSIONS_FILE = KNOWN_FUSIONS_FILE
-    IMPACT_FILE = IMPACT_FILE
 
     # these are the mappings of key:value pairs that should have the related keys removed
     # override this default setting when initializing the class instance, or just pass in
@@ -295,13 +284,6 @@ class PlutoTestCase(unittest.TestCase):
         # override with value passed from env var
         if CWL_ENGINE != CWL_DEFAULT_ENGINE:
             engine = CWL_ENGINE
-        
-        # print(">>> CWL_ENGINE", CWL_ENGINE)
-        # print(">>> engine", engine)
-        
-        # default_engine = CWLEngine("cwltool")
-        # if CWL_ENGINE != engine:
-            
 
         # save a file to the run dir to mark that this test has started running
         filename = "{}.run".format(self.test_label)
@@ -455,7 +437,7 @@ class PlutoTestCase(unittest.TestCase):
             print(json.dumps(d1_copy, indent = 4))
             print(json.dumps(d2_copy, indent = 4))
         self.assertDictEqual(d1_copy, d2_copy, *args, **kwargs)
-    
+
     def assertMutationsHash(
         self,
         mutationsPath: str, # path to mutation file to test

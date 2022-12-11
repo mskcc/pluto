@@ -2,14 +2,16 @@
 # -*- coding: utf-8 -*-
 """
 """
-import unittest
 from classes import (
     SettingBaseClass,
     BooleanSettingBaseClass,
     CWLEngine
 )
+from . import (
+    PlutoTestCase
+)
 
-class TestSettingClasses(unittest.TestCase):
+class TestSettingClasses(PlutoTestCase):
     def test_setting(self):
         """
         """
@@ -76,6 +78,3 @@ class TestSettingClasses(unittest.TestCase):
         for value, expected in values:
             self.assertEqual(BooleanSettingBaseClass(value), expected)
 
-
-if __name__ == "__main__":
-    unittest.main()
