@@ -34,13 +34,9 @@ install: conda
 # conda env create -n pluto -f environment.yml
 # conda activate pluto
 
-
-# $ python3 -m unittest test_tables.py
-# python3 -m unittest discover .
-# CWL_ENGINE=toil python3 -m unittest discover .
 test:
-	pytest --ignore docs -n auto .
-	CWL_ENGINE=toil pytest --ignore docs -n auto .
+	pytest --ignore docs -s .
+	CWL_ENGINE=toil pytest --ignore docs -s .
 
 
 lint:
