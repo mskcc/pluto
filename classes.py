@@ -55,14 +55,29 @@ class CWLEngine(SettingBaseClass):
         do_foo()
     if CWL_ENGINE.toil:
         do_toil()
+    if CWL_ENGINE == 'cwltool':
+        do_someting()
     """
     def __init__(self, value: str = None, default: str = 'cwltool', *args, **kwargs):
         super().__init__(value, default, *args, **kwargs)
         self.cwltool = self.value == "cwltool"
         self.toil = self.value == "toil"
+
         # re-apply the defaults if neither was correctly set
         if not self.cwltool and not self.toil:
             self.cwltool = True
+        # if an invalid value was passed, default to cwltool
+        if self.value not in {"cwltool", "toil"}:
+            self.cwltool = True
+        
+        # store a string for the name for comparisons, default to cwltool
+        self.engine_name = "cwltool"
+        if self.toil:
+            self.engine_name = "toil"
+    
+    def __eq__(self, other):
+        return(self.engine_name == other)
+
 
 class BooleanSettingBaseClass(object):
     """

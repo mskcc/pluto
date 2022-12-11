@@ -34,21 +34,28 @@ class TestSettingClasses(unittest.TestCase):
         """
         """
         values = [
-            { "value": "toil", "toil": True, "cwltool": False },
-            { "value": "Toil", "toil": True, "cwltool": False },
-            { "value": "cwltool", "toil": False, "cwltool": True },
-            { "value": "none", "toil": False, "cwltool": True },
-            { "value": "None", "toil": False, "cwltool": True },
-            { "value": None, "toil": False, "cwltool": True },
-            { "value": True, "toil": False, "cwltool": True },
-            { "value": False, "toil": False, "cwltool": True },
-            { "value": "fooooo", "toil": False, "cwltool": True },
+            # only settings explicitly labeled as "toil" should enable Toil, 
+            # all others should default to cwltool
+            { "value": "toil", "toil": True, "cwltool": False, "equiv_cwltool": False },
+            { "value": "Toil", "toil": True, "cwltool": False, "equiv_cwltool": False },
+            { "value": "cwltool", "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": "none", "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": "None", "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": None, "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": True, "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": False, "toil": False, "cwltool": True, "equiv_cwltool": True },
+            { "value": "fooooo", "toil": False, "cwltool": True, "equiv_cwltool": True },
         ]
         for val in values:
-            self.assertEqual(
-                (CWLEngine(val['value']).toil, CWLEngine(val['value']).cwltool), 
-                (val['toil'], val['cwltool'])
-                )
+            setting = CWLEngine(val['value'])
+            got = (setting.toil, setting.cwltool, setting == "cwltool")
+            want = (val['toil'], val['cwltool'], val['equiv_cwltool'])
+            message = "ERROR with {}, got: {}, want: {}".format(
+                setting.__repr__(),
+                got,
+                want
+            )
+            self.assertEqual(got, want, message)
 
     def test_bool_setting(self):
         """

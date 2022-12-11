@@ -56,6 +56,7 @@ USE_LSF = UseLSF(os.environ.get('USE_LSF', "False"))
 
 # whether Toil or cwltool should be used
 CWL_ENGINE = CWLEngine(os.environ.get('CWL_ENGINE', "None"))
+CWL_DEFAULT_ENGINE = CWLEngine("cwltool")
 
 # the location of this file
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))

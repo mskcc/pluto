@@ -1,9 +1,10 @@
 import unittest
 import os
+import json
 from typing import Dict, Union, Tuple, List
 from datetime import datetime
 from pathlib import Path
-from tempfile import mkdtemp
+from tempfile import mkdtemp, mkstemp
 import shutil
 from copy import deepcopy
 
@@ -17,6 +18,7 @@ try:
         TMP_DIR,
         KEEP_TMP,
         CWL_ENGINE,
+        CWL_DEFAULT_ENGINE,
         PRINT_COMMAND,
         PRINT_TESTNAME,
         TOIL_STATS,
@@ -38,6 +40,12 @@ try:
     from .run import (
         run_command,
     )
+    from .mafio import (
+        TableReader,
+    )
+    from .classes import (
+        CWLEngine,
+    )
 except ImportError:
     from settings import (
         DATA_SETS,
@@ -47,6 +55,7 @@ except ImportError:
         TMP_DIR,
         KEEP_TMP,
         CWL_ENGINE,
+        CWL_DEFAULT_ENGINE,
         PRINT_COMMAND,
         PRINT_TESTNAME,
         TOIL_STATS,
@@ -65,8 +74,14 @@ except ImportError:
         parse_header_comments,
         md5_obj
     )
-    from .run import (
+    from run import (
         run_command,
+    )
+    from mafio import (
+        TableReader,
+    )
+    from classes import (
+        CWLEngine,
     )
 
 class PlutoTestCase(unittest.TestCase):
@@ -278,8 +293,15 @@ class PlutoTestCase(unittest.TestCase):
             print(">>> WARNING: empty input passed to run_cwl() by test: ", self.test_label)
 
         # override with value passed from env var
-        if CWL_ENGINE != engine:
+        if CWL_ENGINE != CWL_DEFAULT_ENGINE:
             engine = CWL_ENGINE
+        
+        # print(">>> CWL_ENGINE", CWL_ENGINE)
+        # print(">>> engine", engine)
+        
+        # default_engine = CWLEngine("cwltool")
+        # if CWL_ENGINE != engine:
+            
 
         # save a file to the run dir to mark that this test has started running
         filename = "{}.run".format(self.test_label)

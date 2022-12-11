@@ -58,7 +58,7 @@ import os
 import sys
 import json
 from copy import deepcopy
-from typing import List
+from typing import List, Dict
 from urllib.parse import urlparse, urlsplit, urlunsplit
 
 class OFile(dict):
