@@ -36,3 +36,6 @@ install: conda
 test:
 	pytest --ignore docs -n auto .
 	CWL_ENGINE=toil pytest --ignore docs -n auto .
+
+# https://pytest-xdist.readthedocs.io/en/latest/distribution.html
+# https://docs.pytest.org/en/7.2.x/how-to/unittest.html#unittest
