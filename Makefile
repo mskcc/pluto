@@ -34,10 +34,11 @@ install: conda
 # conda env create -n pluto -f environment.yml
 # conda activate pluto
 
+# https://pytest-xdist.readthedocs.io/en/latest/distribution.html
+# https://docs.pytest.org/en/7.2.x/how-to/unittest.html#unittest
 test:
 	pytest -n 4 --ignore docs -s .
 	CWL_ENGINE=toil pytest -n 4 --ignore docs -s .
-
 
 lint:
 	mypy --namespace-packages --explicit-package-bases .
