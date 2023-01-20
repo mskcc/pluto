@@ -175,23 +175,26 @@ class PlutoTestCase(unittest.TestCase):
         # put the CWL input data here; this will get dumped to a JSON file before executing tests
         self.input = {}
 
+        prefix = self.test_label + "."
+
         if PRINT_TESTNAME:
             print("\n>>> starting test: {}".format(self.test_label))
 
+        # NOTE: I think there used to be other logic bundled in here at some point, not sure if we need this if/else anymore...
         # if we are using LSF then the tmpdir needs to be created in a location accessible by the whole cluster
         if USE_LSF:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
-            self.tmpdir = mkdtemp(dir = TMP_DIR)
+            self.tmpdir = mkdtemp(dir = TMP_DIR, prefix = prefix)
         # also Toil tmp dir grows to massive sizes so do not use /tmp for it because it fills up
         elif CWL_ENGINE.toil:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
-            self.tmpdir = mkdtemp(dir = TMP_DIR)
+            self.tmpdir = mkdtemp(dir = TMP_DIR, prefix = prefix)
         # if a TMP_DIR was passed in the environment variable
         elif TMP_DIR:
             Path(TMP_DIR).mkdir(parents=True, exist_ok=True)
-            self.tmpdir = mkdtemp(dir = TMP_DIR)
+            self.tmpdir = mkdtemp(dir = TMP_DIR, prefix = prefix)
         else:
-            self.tmpdir = mkdtemp()
+            self.tmpdir = mkdtemp(prefix = prefix)
 
         # prevent deletion of tmpdir after tests complete
         self.preserve = False
